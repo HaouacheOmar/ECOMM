@@ -310,3 +310,11 @@ def test_status_is_never_patched(admin, placed):
     order, _ = placed
     assert admin.patch(f'/api/orders/{order["id"]}/', {'status': 'DELIVERED'}, format='json').status_code == 405
     assert Order.objects.get(pk=order['id']).status == 'CONFIRMED'
+
+
+def test_staff_filter_orders_by_customer(admin, placed):
+    order, _ = placed
+    customer_id = Order.objects.get(pk=order['id']).customer_id
+    assert admin.get(f'/api/orders/?customer={customer_id}').data['count'] == 1
+    assert admin.get(f'/api/orders/?customer={User.objects.create_user("x@eshop.test", "x").pk}').data['count'] == 0
+    assert admin.get('/api/orders/?customer=nope').status_code == 400

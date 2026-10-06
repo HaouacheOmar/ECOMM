@@ -19,6 +19,6 @@ export default function useLiveOrders() {
       refresh: async () => Boolean((await dispatch(authApi.endpoints.restoreSession.initiate())).data),
       onReady: refetch,
       onEvent: refetch,
-    })
+    }).close
   }, [userId, dispatch, store])
 }

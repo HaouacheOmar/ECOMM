@@ -6,6 +6,8 @@ import AnimatedOutlet from '../AnimatedOutlet.jsx'
 import LogoutButton from '../auth/LogoutButton.jsx'
 import VerifyEmailBanner from '../auth/VerifyEmailBanner.jsx'
 import CartDrawer from '../cart/CartDrawer.jsx'
+import ChatBubble from '../chat/ChatBubble.jsx'
+import ChatProvider from '../chat/ChatProvider.jsx'
 import { CartDrawerContext } from '../cart/CartDrawerContext.js'
 import useCart from '../cart/useCart.js'
 import useLiveOrders from '../orders/useLiveOrders.js'
@@ -30,6 +32,7 @@ function CartButton({ onClick }) {
 
 export default function StorefrontLayout() {
   const signedIn = useSelector((state) => state.auth.status === 'authenticated')
+  const isCustomer = useSelector((state) => state.auth.user?.role === 'CUSTOMER')
   useLiveOrders() // a Customer's My Orders follows Shipped/Delivered live
   const [cartOpen, setCartOpen] = useState(false)
   const open = useCallback(() => setCartOpen(true), [])
@@ -58,6 +61,7 @@ export default function StorefrontLayout() {
         <AnimatedOutlet />
       </main>
       <CartDrawer isOpen={cartOpen} onClose={close} />
+      {isCustomer && <ChatProvider><ChatBubble /></ChatProvider>}
     </CartDrawerContext.Provider>
   )
 }

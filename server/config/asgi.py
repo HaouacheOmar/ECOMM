@@ -14,10 +14,12 @@ from channels.security.websocket import OriginValidator  # noqa: E402
 from django.conf import settings  # noqa: E402
 from django.urls import path  # noqa: E402
 
+from chat.consumers import ChatConsumer  # noqa: E402
 from orders.live import OrdersConsumer  # noqa: E402
 
 websocket_urlpatterns = [
     path('ws/orders/', OrdersConsumer.as_asgi()),
+    path('ws/chat/', ChatConsumer.as_asgi()),
 ]
 
 application = ProtocolTypeRouter({

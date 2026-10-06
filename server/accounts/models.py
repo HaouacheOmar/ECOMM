@@ -36,6 +36,8 @@ class User(AbstractUser):
         'self', null=True, blank=True, on_delete=models.SET_NULL,
         related_name='assigned_customers', limit_choices_to={'role': Role.EMPLOYEE},
     )
+    # Customers only: when they started waiting in the Support Queue (null = not waiting).
+    queued_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

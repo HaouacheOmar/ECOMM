@@ -187,8 +187,11 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         orders = self.scoped().select_related('customer', 'pickup_point').prefetch_related('items__product__images')
-        status = self.request.query_params.get('status')
-        return orders.filter(status=status) if status else orders
+        if status := self.request.query_params.get('status'):
+            orders = orders.filter(status=status)
+        if customer := self.request.query_params.get('customer'):  # the desk's "this Customer's Orders"
+            orders = orders.filter(customer_id=serializers.UUIDField().run_validation(customer))
+        return orders
 
     def respond(self, order, event, status=200):
         """Answer with the fresh Order and push the same data to the live feed (after commit)."""

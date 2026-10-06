@@ -17,3 +17,14 @@ from accounts.models import User
 from accounts.verification import make_token
 print(make_token(User.objects.get(email=${JSON.stringify(email)})))`)
 }
+
+// A fresh support chat for the E2E customer: no history, not waiting, no Assigned Employee.
+export function resetChat() {
+  djangoShell(`
+from accounts.models import User
+from chat.models import ChatMessage
+customer = User.objects.get(email='customer@e2e.test')
+ChatMessage.objects.filter(customer=customer).delete()
+User.objects.filter(pk=customer.pk).update(assigned_employee=None, queued_at=None)
+print('ok')`)
+}

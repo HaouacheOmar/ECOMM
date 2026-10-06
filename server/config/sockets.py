@@ -18,6 +18,7 @@ from accounts.models import User
 
 AUTH_TIMEOUT = 5
 UNAUTHORIZED = 4001
+FORBIDDEN = 4003
 
 
 @database_sync_to_async
@@ -42,6 +43,13 @@ class AuthenticatedConsumer(AsyncJsonWebsocketConsumer):
     def groups_for(self, user):
         raise NotImplementedError
 
+    def allowed(self, user):
+        """Which roles may use this socket (others are closed with 4003)."""
+        return True
+
+    async def on_authenticated(self):
+        """Runs once the user is known and has joined their groups."""
+
     async def connect(self):
         await self.accept()
         self.close_in(AUTH_TIMEOUT)
@@ -61,11 +69,14 @@ class AuthenticatedConsumer(AsyncJsonWebsocketConsumer):
         user, expires = await user_for(content.get('token')) if content.get('type') == 'auth' else (None, 0)
         if user is None:
             return await self.close(code=UNAUTHORIZED)
+        if not self.allowed(user):
+            return await self.close(code=FORBIDDEN)
         self.user = user
         self.joined = self.groups_for(user)
         for group in self.joined:
             await self.channel_layer.group_add(group, self.channel_name)
         self.close_in(max(0, expires - time.time()))
+        await self.on_authenticated()
         await self.send_json({'type': 'ready'})
 
     async def handle(self, content):

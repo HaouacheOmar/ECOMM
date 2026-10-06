@@ -14,7 +14,7 @@ from config.asgi import application
 from orders.models import PickupPoint
 from products.models import Category, Product
 
-pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.asyncio]
+pytestmark = pytest.mark.django_db(transaction=True)
 
 
 def make_user(email, role=User.Role.CUSTOMER):
