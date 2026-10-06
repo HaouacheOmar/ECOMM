@@ -3,6 +3,8 @@ import { Route, Routes, useParams } from 'react-router-dom'
 import AccountPage from './auth/AccountPage.jsx'
 import LoginPage from './auth/LoginPage.jsx'
 import VerifyEmailPage from './auth/VerifyEmailPage.jsx'
+import ForgotPasswordPage from './auth/ForgotPasswordPage.jsx'
+import ResetPasswordPage from './auth/ResetPasswordPage.jsx'
 import RequireRole from './auth/RequireRole.jsx'
 import HomePage from './storefront/HomePage.jsx'
 
@@ -65,6 +67,8 @@ export default function App() {
           <Route path="products/:id" element={<ProductPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="verify/:token" element={<VerifyEmailPage />} />
+          <Route path="forgot" element={<ForgotPasswordPage />} />
+          <Route path="reset/:uid/:token" element={<ResetPasswordPage />} />
           <Route path="account" element={<RequireRole role="CUSTOMER"><AccountPage /></RequireRole>} />
           <Route path="checkout" element={<RequireRole role="CUSTOMER"><CheckoutPage /></RequireRole>} />
           <Route path="orders" element={<RequireRole role="CUSTOMER"><MyOrdersPage /></RequireRole>} />

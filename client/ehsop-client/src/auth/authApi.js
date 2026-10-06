@@ -1,4 +1,4 @@
-import { api, refreshSession } from '../api.js'
+import { api, refreshSession, waitForSessionChange } from '../api.js'
 import { sessionEnded, sessionStarted } from './authSlice.js'
 
 export const authApi = api.injectEndpoints({
@@ -39,6 +39,20 @@ export const authApi = api.injectEndpoints({
       queryFn: (_, apiCtx, extraOptions) => refreshSession(apiCtx, extraOptions),
     }),
     me: build.query({ query: () => 'me/' }),
+    forgotPassword: build.mutation({ query: (email) => ({ url: 'auth/password/reset/', method: 'POST', body: { email } }) }),
+    resetPassword: build.mutation({ query: (body) => ({ url: 'auth/password/reset/confirm/', method: 'POST', body }) }),
+    // Other sessions are signed out; this one continues with the fresh tokens returned.
+    changePassword: build.mutation({
+      query: (body) => ({ url: 'auth/password/change/', method: 'POST', body }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        waitForSessionChange(queryFulfilled)
+        try {
+          dispatch(sessionStarted((await queryFulfilled).data))
+        } catch {
+          // shown by the form
+        }
+      },
+    }),
   }),
 })
 
@@ -49,4 +63,10 @@ export const {
   useResendVerificationMutation,
   useLogoutMutation,
   useMeQuery,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useChangePasswordMutation,
 } = authApi
+
+// DRF errors: {"field": ["message"]}.
+export const fieldError = (error, field) => error?.data?.[field]?.[0]

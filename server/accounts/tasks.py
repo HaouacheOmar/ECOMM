@@ -18,3 +18,21 @@ def send_verification_email(user_id):
         None,
         [user.email],
     )
+
+
+
+@shared_task(autoretry_for=(OSError,), retry_backoff=True, max_retries=5)
+def send_password_reset_email(user_id):
+    from .passwords import reset_link  # avoids a circular import (passwords queues this task)
+
+    user = User.objects.filter(pk=user_id, is_active=True).first()
+    if user is None:
+        return
+    send_mail(
+        'Reset your E-Shop password',
+        f'Someone asked to reset the password for {user.email}.\n\n'
+        f'Choose a new password here:\n{reset_link(user)}\n\n'
+        "The link works once and expires in 1 hour. If this wasn't you, ignore this email.",
+        None,
+        [user.email],
+    )

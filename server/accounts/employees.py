@@ -1,28 +1,16 @@
 """The Admin's management of Employee accounts and their Employee Sessions."""
 
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
-from django.utils import timezone
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
 from chat import presence
 from chat.service import presence_changed, requeue_unanswered
-from config.sockets import close_all_sockets
 
-from .activity import session_changed
 from .models import EmployeeSession, User
 from .permissions import IsAdmin
-
-
-def check_password(password, user):
-    try:
-        validate_password(password, user)
-    except DjangoValidationError as error:
-        raise serializers.ValidationError({'password': list(error.messages)})
+from .security import check_password, sign_out_everywhere
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -62,14 +50,6 @@ class SetPasswordSerializer(serializers.Serializer):
     password = serializers.CharField()
 
 
-def end_sessions(user):
-    """Close the open Employee Session and revoke every refresh token, so no tab can stay signed in."""
-    if EmployeeSession.objects.filter(employee=user, logout_at=None).update(logout_at=timezone.now()):
-        session_changed(user, ended=True)
-    for token in OutstandingToken.objects.filter(user=user):
-        BlacklistedToken.objects.get_or_create(token=token)
-
-
 class EmployeeViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAdmin]
     queryset = User.objects.filter(role=User.Role.EMPLOYEE).order_by('-is_active', 'email')
@@ -105,8 +85,7 @@ class EmployeeViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets
             else:
                 requeue_unanswered(employee)
             employee.assigned_customers.update(assigned_employee=None)
-            end_sessions(employee)
-        close_all_sockets(employee.pk)
+        sign_out_everywhere(employee)
         return Response(EmployeeSerializer(employee).data)
 
     @action(detail=True, methods=['post'])

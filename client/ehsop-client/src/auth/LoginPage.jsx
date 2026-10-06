@@ -1,20 +1,10 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useLoginMutation, useRegisterMutation } from './authApi.js'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { fieldError, useLoginMutation, useRegisterMutation } from './authApi.js'
+import Field from './Field.jsx'
 import { HOME_BY_ROLE } from './authSlice.js'
 
-const fieldError = (error, field) => error?.data?.[field]?.[0]
-
-function Field({ id, label, error, ...input }) {
-  return (
-    <div className="mb-3">
-      <label htmlFor={id} className="form-label">{label}</label>
-      <input id={id} className={`form-control${error ? ' is-invalid' : ''}`} aria-describedby={error ? `${id}-error` : undefined} {...input} />
-      {error && <div id={`${id}-error`} className="text-danger small mt-1">{error}</div>}
-    </div>
-  )
-}
 
 // Only return to the requested page if it belongs to this role's workspace.
 function destination(from, role) {
@@ -47,6 +37,7 @@ function LoginForm({ onBusy, onDone }) {
       <Field id="login-password" label="Password" name="password" type="password" autoComplete="current-password" required value={form.password} onChange={onChange} />
       {error && <div role="alert" className="text-danger small mb-3">{error}</div>}
       <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>{isLoading ? 'Logging in…' : 'Log in'}</button>
+      <p className="text-center small mt-3 mb-0"><Link to="/forgot">Forgot your password?</Link></p>
     </form>
   )
 }

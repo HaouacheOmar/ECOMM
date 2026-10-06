@@ -51,6 +51,16 @@ def session_response(user, refresh, access, status=200):
     return response
 
 
+def start_session(user, status=200):
+    """Fresh tokens for a password login (or after a password change); Employees get a new Employee Session."""
+    refresh = refresh_token_for(user)
+    if user.role == User.Role.EMPLOYEE:
+        # The session id rides in the refresh token (kept across rotation) so logout closes this session.
+        refresh['employee_session'] = EmployeeSession.objects.create(employee=user).pk
+        session_changed(user, ended=False)
+    return session_response(user, str(refresh), str(refresh.access_token), status=status)
+
+
 def unauthorized(detail, code):
     response = Response({'detail': detail, 'code': code}, status=401)
     response.delete_cookie(REFRESH_COOKIE, path=REFRESH_COOKIE_PATH, samesite='Strict')
@@ -71,12 +81,7 @@ class LoginView(APIView):
         if user is None:
             return Response({'detail': 'No active account found with the given credentials.'}, status=401)
 
-        refresh = refresh_token_for(user)
-        if user.role == User.Role.EMPLOYEE:
-            # The session id rides in the refresh token (kept across rotation) so logout closes this session.
-            refresh['employee_session'] = EmployeeSession.objects.create(employee=user).pk
-            session_changed(user, ended=False)
-        return session_response(user, str(refresh), str(refresh.access_token))
+        return start_session(user)
 
 
 class RefreshView(APIView):

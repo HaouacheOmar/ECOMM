@@ -24,6 +24,7 @@ DEBUG = env('DJANGO_DEBUG', '1') == '1'
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 FRONTEND_ORIGIN = env('FRONTEND_ORIGIN', 'http://localhost:5173')
+PASSWORD_RESET_TIMEOUT = 3600  # reset links last 1 hour (and work once)
 
 
 # Application definition

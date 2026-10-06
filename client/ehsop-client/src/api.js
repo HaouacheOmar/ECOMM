@@ -16,11 +16,21 @@ const rawBaseQuery = fetchBaseQuery({
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let refreshing = null
+let sessionChanging = null
+
+// A password change revokes every refresh token and closes this tab's sockets, then answers with a
+// new session. The sockets' close can arrive first; their refresh must wait for the new cookie.
+export function waitForSessionChange(request) {
+  sessionChanging = request.catch(() => {}).finally(() => {
+    sessionChanging = null
+  })
+}
 
 // One refresh at a time: concurrent 401s (and app bootstrap) share the same request, because the
 // refresh cookie rotates and a second request with the old cookie would be rejected.
 export function refreshSession(api, extraOptions) {
   refreshing ??= (async () => {
+    await sessionChanging
     let result = await rawBaseQuery({ url: 'auth/refresh/', method: 'POST' }, api, extraOptions)
     if (result.error?.data?.code === 'session_expired') {
       // ponytail: another tab may have just rotated the cookie; one delayed retry covers it, a

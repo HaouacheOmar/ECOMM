@@ -28,3 +28,19 @@ ChatMessage.objects.filter(customer=customer).delete()
 User.objects.filter(pk=customer.pk).update(assigned_employee=None, queued_at=None)
 print('ok')`)
 }
+
+// A throwaway Customer (removed by global setup on the next run) for tests that change passwords.
+export function makeCustomer(email, password) {
+  djangoShell(`
+from accounts.models import User
+User.objects.create_user(${JSON.stringify(email)}, ${JSON.stringify(password)}, is_email_verified=True)
+print('ok')`)
+}
+
+// The "/reset/<uid>/<token>" part of the link a real user would get by email.
+export function resetPath(email) {
+  return djangoShell(`
+from accounts.models import User
+from accounts.passwords import reset_link
+print(reset_link(User.objects.get(email=${JSON.stringify(email)})).split('#')[1])`)
+}
