@@ -1,4 +1,4 @@
-# Image for the Celery worker and Beat (Django itself runs on the host via runserver).
+# Image for Django (backend) and the Celery worker and Beat.
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app

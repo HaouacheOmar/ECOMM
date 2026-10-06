@@ -1,5 +1,11 @@
-# Local infrastructure. Django runs on the host (`python manage.py runserver`);
-# PostgreSQL is published on 5433 so it doesn't clash with a native install on 5432.
+# The whole app for local development: `docker compose up -d`, then open http://localhost:5173.
+# Code is mounted, so edits reload. PostgreSQL is published on 5433 so it doesn't clash with a
+# native install on 5432. Running Django/Vite on the host instead still works (stop these two first).
+x-django-env: &django-env
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  REDIS_URL: redis://redis:6379/0
+
 services:
   postgres:
     image: postgres:17
@@ -14,14 +20,32 @@ services:
     image: redis:7
     ports: ["6379:6379"]
 
+  backend:
+    build: ./server
+    # runserver uses daphne (HTTP + WebSockets) and reloads on code changes.
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+    volumes: [./server:/app]
+    environment: *django-env
+    ports: ["8000:8000"]
+    depends_on: [postgres, redis]
+
+  frontend:
+    image: node:22
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173 --strictPort"
+    volumes:
+      - ./client/ehsop-client:/app
+      - frontend-node-modules:/app/node_modules  # Linux binaries, kept apart from the Windows install
+    environment:
+      VITE_POLL: "1"
+    ports: ["5173:5173"]
+    depends_on: [backend]
+
   celery-worker: &celery
     build: ./server
     command: celery -A config worker -l info
     volumes: [./server:/app]
-    environment:
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      REDIS_URL: redis://redis:6379/0
+    environment: *django-env
     depends_on: [postgres, redis]
 
   celery-beat:
@@ -30,3 +54,4 @@ services:
 
 volumes:
   pgdata:
+  frontend-node-modules:
