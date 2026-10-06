@@ -2,14 +2,17 @@ import { api } from '../api.js'
 
 export const ordersApi = api.injectEndpoints({
   endpoints: (build) => ({
-    orders: build.query({ query: (page = 1) => ({ url: 'orders/', params: { page } }), providesTags: ['Order'] }),
+    // Customers get their own Orders, staff get all of them (optionally ?status= and ?search= by email).
+    orders: build.query({ query: (params) => ({ url: 'orders/', params }), providesTags: ['Order'] }),
+    order: build.query({ query: (id) => `orders/${id}/`, providesTags: ['Order'] }),
     // Success or a stock conflict alike change the Cart and stock levels, so refetch both either way.
     checkout: build.mutation({
       query: (body) => ({ url: 'orders/', method: 'POST', body }),
       invalidatesTags: () => ['Cart', 'Order', 'Product'],
     }),
-    cancelOrder: build.mutation({
-      query: (id) => ({ url: `orders/${id}/cancel/`, method: 'POST' }),
+    // move: 'ship' | 'deliver' | 'cancel'
+    moveOrder: build.mutation({
+      query: ({ id, move }) => ({ url: `orders/${id}/${move}/`, method: 'POST' }),
       invalidatesTags: () => ['Order', 'Product'],
     }),
     pickupPoints: build.query({ query: () => 'pickup-points/', providesTags: ['PickupPoint'] }),
@@ -30,8 +33,9 @@ export const ordersApi = api.injectEndpoints({
 
 export const {
   useOrdersQuery,
+  useOrderQuery,
   useCheckoutMutation,
-  useCancelOrderMutation,
+  useMoveOrderMutation,
   usePickupPointsQuery,
   useCreatePickupPointMutation,
   useUpdatePickupPointMutation,
@@ -39,3 +43,4 @@ export const {
 } = ordersApi
 
 export const orderNumber = (order) => order.id.slice(0, 8).toUpperCase()
+export const placedOn = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' })

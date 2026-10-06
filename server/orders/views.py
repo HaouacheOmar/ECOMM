@@ -1,13 +1,13 @@
 from django.db import transaction
 from django.db.models import F, ProtectedError
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, serializers, viewsets
+from rest_framework import filters, mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.permissions import IsCustomer, ReadOnlyOrAdmin, is_admin
+from accounts.permissions import IsCustomer, IsStaff, ReadOnlyOrAdmin, is_admin, is_staff_member
 from products.models import Product
 from products.serializers import ProductListSerializer
 
@@ -166,17 +166,28 @@ class PickupPointViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
-    """A Customer's Orders. POST is checkout: the whole Cart becomes one Confirmed Order."""
+    """One URL for every role: a Customer sees their own Orders, the Admin and Employees see all.
+    POST is checkout (Customers only). Status only changes through the ship/deliver/cancel actions."""
 
     serializer_class = OrderSerializer
-    permission_classes = [IsCustomer]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['customer__email']
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsCustomer()]
+        if self.action in ('ship', 'deliver'):
+            return [IsStaff()]
+        return super().get_permissions()
+
+    def scoped(self):
+        user = self.request.user
+        return Order.objects.all() if is_staff_member(user) else Order.objects.filter(customer=user)
 
     def get_queryset(self):
-        return (
-            Order.objects.filter(customer=self.request.user)
-            .select_related('pickup_point')
-            .prefetch_related('items__product__images')
-        )
+        orders = self.scoped().select_related('customer', 'pickup_point').prefetch_related('items__product__images')
+        status = self.request.query_params.get('status')
+        return orders.filter(status=status) if status else orders
 
     def respond(self, order, status=200):
         return Response(self.get_serializer(self.get_queryset().get(pk=order.pk)).data, status=status)
@@ -222,15 +233,40 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
 
         return self.respond(order, status=201)
 
+    def move(self, pk, to):
+        """Confirmed -> Shipped -> Delivered, or Confirmed -> Cancelled (which puts the stock back)."""
+        with transaction.atomic():
+            order = get_object_or_404(self.scoped().select_for_update(), pk=pk)
+            if order.status != TRANSITIONS[to]:
+                return Response({'detail': REFUSALS[to], 'code': 'invalid_transition'}, status=409)
+            order.status = to
+            order.save(update_fields=['status'])
+            if to == Order.Status.CANCELLED:
+                for item in order.items.all():
+                    Product.objects.filter(pk=item.product_id).update(stock=F('stock') + item.quantity)
+        return self.respond(order)
+
+    @action(detail=True, methods=['post'])
+    def ship(self, request, pk=None):
+        return self.move(pk, Order.Status.SHIPPED)
+
+    @action(detail=True, methods=['post'])
+    def deliver(self, request, pk=None):
+        return self.move(pk, Order.Status.DELIVERED)
+
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
-        """Before it is Shipped, an Order can be cancelled and its stock goes back on sale."""
-        with transaction.atomic():
-            order = get_object_or_404(Order.objects.select_for_update().filter(customer=request.user), pk=pk)
-            if order.status != Order.Status.CONFIRMED:
-                return Response({'detail': 'This order can no longer be cancelled.', 'code': 'not_cancellable'}, status=409)
-            order.status = Order.Status.CANCELLED
-            order.save(update_fields=['status'])
-            for item in order.items.all():
-                Product.objects.filter(pk=item.product_id).update(stock=F('stock') + item.quantity)
-        return self.respond(order)
+        return self.move(pk, Order.Status.CANCELLED)
+
+
+# The status an Order must be in for each move.
+TRANSITIONS = {
+    Order.Status.SHIPPED: Order.Status.CONFIRMED,
+    Order.Status.DELIVERED: Order.Status.SHIPPED,
+    Order.Status.CANCELLED: Order.Status.CONFIRMED,
+}
+REFUSALS = {
+    Order.Status.SHIPPED: 'Only a confirmed order can be shipped.',
+    Order.Status.DELIVERED: 'Only a shipped order can be delivered.',
+    Order.Status.CANCELLED: 'This order can no longer be cancelled.',
+}

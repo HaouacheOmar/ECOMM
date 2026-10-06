@@ -223,5 +223,90 @@ def test_cancel_after_shipped_is_refused(customer, kitchen, algiers, status):
 
     response = customer.post(f'/api/orders/{order["id"]}/cancel/')
 
-    assert response.status_code == 409 and response.data['code'] == 'not_cancellable'
+    assert response.status_code == 409 and response.data['code'] == 'invalid_transition'
     assert stock(mug) == 3
+
+
+# --- Staff Order management ---
+
+@pytest.fixture
+def placed(customer, kitchen, algiers):
+    """A Confirmed Order of 2 Mugs (stock 5 -> 3)."""
+    mug = product(kitchen, stock=5)
+    add(customer, mug, 2)
+    return checkout(customer, algiers).data, mug
+
+
+@pytest.mark.parametrize('role', [User.Role.ADMIN, User.Role.EMPLOYEE])
+def test_staff_see_every_order_with_its_customer(role, placed):
+    order, _ = placed
+    staff = client_for(role)
+    listed = staff.get('/api/orders/').data['results']
+    assert [(o['id'], o['customer']) for o in listed] == [(order['id'], 'customer@eshop.test')]
+    assert staff.get(f'/api/orders/{order["id"]}/').status_code == 200
+
+
+def test_staff_filter_orders_by_status_and_search_by_customer_email(admin, placed):
+    order, _ = placed
+    assert admin.get('/api/orders/?status=CONFIRMED').data['count'] == 1
+    assert admin.get('/api/orders/?status=SHIPPED').data['count'] == 0
+    assert admin.get('/api/orders/?search=customer@').data['count'] == 1
+    assert admin.get('/api/orders/?search=nobody').data['count'] == 0
+
+
+@pytest.mark.parametrize('role', [User.Role.ADMIN, User.Role.EMPLOYEE])
+def test_staff_ship_then_deliver_an_order(role, placed):
+    order, mug = placed
+    staff = client_for(role)
+
+    shipped = staff.post(f'/api/orders/{order["id"]}/ship/')
+    assert shipped.status_code == 200 and shipped.data['status'] == 'SHIPPED'
+    delivered = staff.post(f'/api/orders/{order["id"]}/deliver/')
+    assert delivered.status_code == 200 and delivered.data['status'] == 'DELIVERED'
+    assert stock(mug) == 3
+
+
+@pytest.mark.parametrize('moves,refused', [
+    ([], 'deliver'),                      # Confirmed cannot skip to Delivered
+    (['ship'], 'ship'),                   # no shipping twice
+    (['ship'], 'cancel'),                 # too late to cancel
+    (['ship', 'deliver'], 'cancel'),      # Delivered is final
+    (['ship', 'deliver'], 'deliver'),
+    (['cancel'], 'ship'),                 # Cancelled is final
+])
+def test_invalid_transitions_are_refused(admin, placed, moves, refused):
+    order, mug = placed
+    for move in moves:
+        assert admin.post(f'/api/orders/{order["id"]}/{move}/').status_code == 200
+    before = stock(mug)
+
+    response = admin.post(f'/api/orders/{order["id"]}/{refused}/')
+
+    assert response.status_code == 409 and response.data['code'] == 'invalid_transition'
+    assert stock(mug) == before
+
+
+def test_staff_cancel_restores_stock(admin, placed):
+    order, mug = placed
+    assert admin.post(f'/api/orders/{order["id"]}/cancel/').data['status'] == 'CANCELLED'
+    assert stock(mug) == 5
+
+
+def test_customers_cannot_ship_or_deliver(customer, placed):
+    order, _ = placed
+    assert customer.post(f'/api/orders/{order["id"]}/ship/').status_code == 403
+    assert customer.post(f'/api/orders/{order["id"]}/deliver/').status_code == 403
+    assert Order.objects.get(pk=order['id']).status == 'CONFIRMED'
+
+
+def test_customers_cannot_cancel_or_see_others_orders(placed):
+    order, _ = placed
+    other = client_for(User.Role.CUSTOMER, 'other@eshop.test')
+    assert other.get('/api/orders/').data['count'] == 0
+    assert other.post(f'/api/orders/{order["id"]}/cancel/').status_code == 404
+
+
+def test_status_is_never_patched(admin, placed):
+    order, _ = placed
+    assert admin.patch(f'/api/orders/{order["id"]}/', {'status': 'DELIVERED'}, format='json').status_code == 405
+    assert Order.objects.get(pk=order['id']).status == 'CONFIRMED'

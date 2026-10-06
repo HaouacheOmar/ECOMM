@@ -4,27 +4,20 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ProductImage } from '../products/bits.jsx'
 import { formatPrice } from '../products/formatPrice.js'
-import { StatusBadge } from './bits.jsx'
-import { orderNumber, useCancelOrderMutation, useOrdersQuery } from './ordersApi.js'
+import { Delivery, StatusBadge } from './bits.jsx'
+import { orderNumber, placedOn, useMoveOrderMutation, useOrdersQuery } from './ordersApi.js'
 import './orders.css'
 
 const PAGE_SIZE = 20
-const placedOn = new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' })
-
-function Delivery({ order }) {
-  if (order.delivery_method === 'HOME_DELIVERY') return <>Home Delivery to {order.delivery_address}</>
-  const p = order.pickup_point
-  return <>Pickup Point: {p.name}, {p.address}, {p.city}</>
-}
 
 function OrderCard({ order, initiallyOpen }) {
   const [open, setOpen] = useState(initiallyOpen)
-  const [cancel, cancelled] = useCancelOrderMutation()
+  const [move, cancelled] = useMoveOrderMutation()
   const units = order.items.reduce((n, i) => n + i.quantity, 0)
   const title = `Order ${orderNumber(order)}`
 
   const onCancel = () => {
-    if (window.confirm(`Cancel ${title}? Its items go back on sale.`)) cancel(order.id)
+    if (window.confirm(`Cancel ${title}? Its items go back on sale.`)) move({ id: order.id, move: 'cancel' })
   }
 
   return (
@@ -78,7 +71,7 @@ function OrderCard({ order, initiallyOpen }) {
 export default function MyOrdersPage() {
   const placed = useLocation().state?.placed
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useOrdersQuery(page)
+  const { data, isLoading } = useOrdersQuery({ page })
   const pages = data ? Math.max(1, Math.ceil(data.count / PAGE_SIZE)) : 1
 
   return (

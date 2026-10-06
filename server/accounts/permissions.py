@@ -22,3 +22,13 @@ def is_admin(user):
 class IsCustomer(BasePermission):
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.role == User.Role.CUSTOMER)
+
+
+def is_staff_member(user):
+    """The Admin and Employees: they see and process every Order."""
+    return user.is_authenticated and user.role in (User.Role.ADMIN, User.Role.EMPLOYEE)
+
+
+class IsStaff(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and is_staff_member(request.user))

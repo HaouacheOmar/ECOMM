@@ -36,3 +36,11 @@ export async function emptyCustomerCart(request) {
   const cart = await call(request, 'customer', 'GET', 'cart/')
   for (const line of cart.items) await call(request, 'customer', 'DELETE', `cart/items/${line.product.id}/`)
 }
+
+// A Confirmed Order for the E2E customer (their Cart is emptied first).
+export async function placeOrder(request, name, quantity = 1) {
+  await emptyCustomerCart(request)
+  await call(request, 'customer', 'POST', 'cart/items/', { product: await productId(request, name), quantity })
+  const [point] = await call(request, 'customer', 'GET', 'pickup-points/')
+  return call(request, 'customer', 'POST', 'orders/', { delivery_method: 'PICKUP_POINT', pickup_point: point.id })
+}

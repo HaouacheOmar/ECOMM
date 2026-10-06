@@ -27,10 +27,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     pickup_point = PickupPointSerializer(read_only=True)
+    customer = serializers.EmailField(source='customer.email', read_only=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'status', 'delivery_method', 'delivery_address', 'pickup_point', 'total_amount', 'created_at', 'items']
+        fields = ['id', 'customer', 'status', 'delivery_method', 'delivery_address', 'pickup_point', 'total_amount', 'created_at', 'items']
 
 
 class CheckoutSerializer(serializers.Serializer):

@@ -12,6 +12,8 @@ const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
 const AdminProductsPage = lazy(() => import('./admin/AdminProductsPage.jsx'))
 const ProductFormPage = lazy(() => import('./admin/ProductFormPage.jsx'))
 const CategoriesPage = lazy(() => import('./admin/CategoriesPage.jsx'))
+const AdminOrdersPage = lazy(() => import('./admin/AdminOrdersPage.jsx'))
+const AdminOrderPage = lazy(() => import('./admin/AdminOrderPage.jsx'))
 const PickupPointsPage = lazy(() => import('./admin/PickupPointsPage.jsx'))
 const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
 const CheckoutPage = lazy(() => import('./orders/CheckoutPage.jsx'))
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="/admin" element={<RequireRole role="ADMIN"><AdminLayout /></RequireRole>}>
           <Route index element={<Placeholder title="Dashboard" />} />
           <Route path="account" element={<AccountPage />} />
+          <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/:id" element={<AdminOrderPage />} />
           <Route path="products" element={<AdminProductsPage />} />
           <Route path="products/new" element={<ProductFormPage />} />
           <Route path="products/:id" element={<ProductFormPage />} />
