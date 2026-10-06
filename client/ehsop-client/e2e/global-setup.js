@@ -45,7 +45,7 @@ for name, category, price, stock, archived in [
 
 # Checkout fixtures, outside the "E2E" catalog so catalog specs are unaffected; stock reset every run.
 decor, _ = Category.objects.get_or_create(name='Home decor')
-for name, stock in [('Checkout Vase', 50), ('Checkout Candle', 1)]:
+for name, stock in [('Checkout Vase', 50), ('Checkout Candle', 1), ('Review Teapot', 0)]:
     Product.objects.update_or_create(name=name, defaults={
         'category': decor, 'price': Decimal('2000'), 'stock': stock, 'is_archived': False,
     })

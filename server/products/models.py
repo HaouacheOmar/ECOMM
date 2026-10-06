@@ -43,3 +43,22 @@ class ProductImage(models.Model):
 
     class Meta:
         ordering = ['-is_primary', 'id']
+
+
+class Review(models.Model):
+    """A Customer's 1-5 rating of a Product, with optional text. One per Customer per Product:
+    reviewing again edits it."""
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    customer = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveSmallIntegerField()
+    text = models.TextField(blank=True, max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'customer'], name='one_review_per_customer'),
+            models.CheckConstraint(condition=models.Q(rating__gte=1, rating__lte=5), name='rating_1_to_5'),
+        ]

@@ -1,12 +1,15 @@
 import { Package, Star } from 'lucide-react'
 
-export function Rating({ value, count }) {
+// Five stars, filled up to the (rounded) value; decorative, so pair it with a text label.
+export function Stars({ value, size = 12 }) {
   const rounded = Math.round(Number(value))
+  return [1, 2, 3, 4, 5].map((n) => <Star key={n} size={size} aria-hidden fill={n <= rounded ? 'currentColor' : 'none'} />)
+}
+
+export function Rating({ value, count }) {
   return (
-    <span className="rating" aria-label={count ? `Rated ${Number(value).toFixed(1)} out of 5 from ${count} reviews` : 'No reviews yet'}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <Star key={n} size={12} aria-hidden fill={n <= rounded && count ? 'currentColor' : 'none'} />
-      ))}
+    <span className="rating" aria-label={count ? `Rated ${Number(value).toFixed(1)} out of 5 from ${count} review${count === 1 ? '' : 's'}` : 'No reviews yet'}>
+      <Stars value={count ? value : 0} />
       <span className="ms-1">{count ? `(${count})` : 'No reviews'}</span>
     </span>
   )

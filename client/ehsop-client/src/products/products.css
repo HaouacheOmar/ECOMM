@@ -107,3 +107,38 @@
   color: var(--es-muted);
   opacity: 1;
 }
+
+/* Reviews */
+.review-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.review {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--es-hairline);
+}
+.star-input {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.star-input legend {
+  float: none;
+  width: 100%;
+}
+.star-option {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--bs-border-radius-pill);
+  cursor: pointer;
+}
+.star-option:has(input:focus-visible) {
+  outline: 2px solid var(--bs-focus-ring-color);
+}
+.star-on {
+  color: var(--es-accent);
+}
+.star-off {
+  color: var(--es-muted);
+}

@@ -5,6 +5,7 @@ import AddToCartButton from '../cart/AddToCartButton.jsx'
 import { ProductImage, Rating } from './bits.jsx'
 import { formatPrice } from './formatPrice.js'
 import { useProductQuery } from './productsApi.js'
+import Reviews from './Reviews.jsx'
 import './products.css'
 
 function stockLabel(stock) {
@@ -62,6 +63,7 @@ export default function ProductPage() {
           {product.description && <p className="mt-3" style={{ whiteSpace: 'pre-line' }}>{product.description}</p>}
         </div>
       </div>
+      <Reviews product={product} />
     </article>
   )
 }

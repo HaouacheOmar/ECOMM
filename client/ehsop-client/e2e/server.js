@@ -44,3 +44,13 @@ from accounts.models import User
 from accounts.passwords import reset_link
 print(reset_link(User.objects.get(email=${JSON.stringify(email)})).split('#')[1])`)
 }
+
+// No Reviews on a Product, and its rating back to zero.
+export function resetReviews(name) {
+  djangoShell(`
+from products.models import Product
+product = Product.objects.get(name=${JSON.stringify(name)})
+product.reviews.all().delete()
+Product.objects.filter(pk=product.pk).update(rating_avg=0, review_count=0)
+print('ok')`)
+}

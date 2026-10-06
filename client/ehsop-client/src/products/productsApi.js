@@ -9,7 +9,25 @@ export const productsApi = api.injectEndpoints({
       providesTags: ['Product'],
     }),
     product: build.query({ query: (id) => `products/${id}/`, providesTags: (_r, _e, id) => [{ type: 'Product', id }] }),
+    productReviews: build.query({
+      query: ({ id, page = 1 }) => ({ url: `products/${id}/reviews/`, params: { page } }),
+      providesTags: ['Review'],
+    }),
+    // The signed-in Customer's own Review (404 until they write one).
+    myReview: build.query({ query: (id) => `products/${id}/reviews/mine/`, providesTags: ['Review'] }),
+    // Creates or edits the Customer's Review; the Product's average and count change with it.
+    postReview: build.mutation({
+      query: ({ id, ...body }) => ({ url: `products/${id}/reviews/`, method: 'POST', body }),
+      invalidatesTags: ['Review', 'Product'],
+    }),
   }),
 })
 
-export const { useCategoriesQuery, useProductsQuery, useProductQuery } = productsApi
+export const {
+  useCategoriesQuery,
+  useProductsQuery,
+  useProductQuery,
+  useProductReviewsQuery,
+  useMyReviewQuery,
+  usePostReviewMutation,
+} = productsApi
