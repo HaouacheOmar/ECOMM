@@ -14,6 +14,22 @@ for email, role in ${JSON.stringify(Object.values(USERS).map((u) => [u.email, u.
     user.role, user.is_active = role, True
     user.set_password(${JSON.stringify(PASSWORD)})
     user.save()
+
+# A small deterministic catalog, all names prefixed "E2E" so tests can isolate it.
+from decimal import Decimal
+from products.models import Category, Product
+kitchen, _ = Category.objects.get_or_create(name='Kitchen')
+bags, _ = Category.objects.get_or_create(name='Bags')
+for name, category, price, stock, archived in [
+    ('E2E Mug', kitchen, '1200', 5, False),
+    ('E2E Tote', bags, '2500', 0, False),
+    ('E2E Board', kitchen, '3800', 3, False),
+    ('E2E Archived Lamp', kitchen, '900', 4, True),
+]:
+    Product.objects.update_or_create(name=name, defaults={
+        'category': category, 'price': Decimal(price), 'stock': stock, 'is_archived': archived,
+        'description': f'{name} for end-to-end tests.',
+    })
 `
   execFileSync(PYTHON, ['manage.py', 'shell', '-c', script], { cwd, stdio: 'inherit' })
 }

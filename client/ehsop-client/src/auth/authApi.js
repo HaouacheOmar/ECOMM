@@ -6,8 +6,12 @@ export const authApi = api.injectEndpoints({
     login: build.mutation({
       query: (credentials) => ({ url: 'auth/login/', method: 'POST', body: credentials }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled
-        dispatch(sessionStarted(data))
+        try {
+          const { data } = await queryFulfilled
+          dispatch(sessionStarted(data))
+        } catch {
+          // failure is shown by the login form via the mutation result
+        }
       },
     }),
     logout: build.mutation({

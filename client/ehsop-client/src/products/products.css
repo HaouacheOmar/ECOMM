@@ -1,0 +1,97 @@
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* 28px card with an 8px white frame around the 20px-radius image (style reference) */
+.product-card {
+  position: relative;
+  padding: 8px 8px 16px;
+}
+.product-card > :not(:first-child),
+.product-card .product-name {
+  padding-inline: 8px;
+}
+.product-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--bs-border-radius);
+  background: var(--es-canvas);
+}
+.product-img-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--es-muted);
+}
+.product-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 12px 0 2px;
+}
+.product-price {
+  font-weight: 500;
+}
+.rating {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--es-muted);
+}
+.badge-out {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--es-canvas);
+  color: var(--es-muted);
+}
+.stock-ok {
+  color: var(--es-online);
+}
+
+/* Category pills */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  border: 1px solid var(--es-hairline);
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--es-surface);
+  color: var(--es-text);
+  padding: 6px 16px;
+  box-shadow: var(--es-shadow-sm);
+  min-height: 36px;
+}
+.chip[aria-pressed='true'] {
+  background: var(--es-text);
+  color: var(--es-surface);
+  border-color: var(--es-text);
+}
+
+/* Product page thumbnails */
+.thumbs {
+  display: flex;
+  gap: 8px;
+}
+.thumb {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: none;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+}
+.thumb[aria-pressed='true'] {
+  border-color: var(--es-accent);
+}
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

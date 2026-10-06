@@ -3,10 +3,13 @@ import { Route, Routes, useParams } from 'react-router-dom'
 import AccountPage from './auth/AccountPage.jsx'
 import LoginPage from './auth/LoginPage.jsx'
 import RequireRole from './auth/RequireRole.jsx'
+import HomePage from './storefront/HomePage.jsx'
 
 const StorefrontLayout = lazy(() => import('./storefront/StorefrontLayout.jsx'))
 const DeskLayout = lazy(() => import('./desk/DeskLayout.jsx'))
 const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
+const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
+const ProductPage = lazy(() => import('./products/ProductPage.jsx'))
 
 function Placeholder({ title }) {
   const { section } = useParams()
@@ -30,7 +33,9 @@ export default function App() {
           <Route path=":section" element={<Placeholder />} />
         </Route>
         <Route path="/" element={<StorefrontLayout />}>
-          <Route index element={<Placeholder title="Welcome" />} />
+          <Route index element={<HomePage />} />
+          <Route path="products" element={<CatalogPage />} />
+          <Route path="products/:id" element={<ProductPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="account" element={<RequireRole role="CUSTOMER"><AccountPage /></RequireRole>} />
           <Route path=":section" element={<Placeholder />} />
