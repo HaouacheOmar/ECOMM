@@ -1,0 +1,32 @@
+# Local infrastructure. Django runs on the host (`python manage.py runserver`);
+# PostgreSQL is published on 5433 so it doesn't clash with a native install on 5432.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: eshop
+      POSTGRES_USER: eshop
+      POSTGRES_PASSWORD: eshop
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  celery-worker: &celery
+    build: ./server
+    command: celery -A config worker -l info
+    volumes: [./server:/app]
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    depends_on: [postgres, redis]
+
+  celery-beat:
+    <<: *celery
+    command: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+
+volumes:
+  pgdata:

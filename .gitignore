@@ -9,3 +9,6 @@ CLAUDE.md
 CONTEXT.md
 docs/
 docx/
+server/media/
+.claude/
+.playwright-mcp/
