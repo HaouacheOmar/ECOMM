@@ -15,6 +15,14 @@ for email, role in ${JSON.stringify(Object.values(USERS).map((u) => [u.email, u.
     user.set_password(${JSON.stringify(PASSWORD)})
     user.save()
 
+# Leftovers from earlier Admin-catalog runs.
+from products.models import Category, Product
+for leftover in Product.objects.filter(name__startswith='Admin test '):
+    for img in leftover.images.all():
+        img.image.delete(save=False)
+    leftover.delete()
+Category.objects.filter(name__startswith='Test category ').delete()
+
 # A small deterministic catalog, all names prefixed "E2E" so tests can isolate it.
 from decimal import Decimal
 from products.models import Category, Product

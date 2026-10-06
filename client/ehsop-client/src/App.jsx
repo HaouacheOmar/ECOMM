@@ -8,6 +8,9 @@ import HomePage from './storefront/HomePage.jsx'
 const StorefrontLayout = lazy(() => import('./storefront/StorefrontLayout.jsx'))
 const DeskLayout = lazy(() => import('./desk/DeskLayout.jsx'))
 const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
+const AdminProductsPage = lazy(() => import('./admin/AdminProductsPage.jsx'))
+const ProductFormPage = lazy(() => import('./admin/ProductFormPage.jsx'))
+const CategoriesPage = lazy(() => import('./admin/CategoriesPage.jsx'))
 const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
 const ProductPage = lazy(() => import('./products/ProductPage.jsx'))
 
@@ -30,6 +33,10 @@ export default function App() {
         <Route path="/admin" element={<RequireRole role="ADMIN"><AdminLayout /></RequireRole>}>
           <Route index element={<Placeholder title="Dashboard" />} />
           <Route path="account" element={<AccountPage />} />
+          <Route path="products" element={<AdminProductsPage />} />
+          <Route path="products/new" element={<ProductFormPage />} />
+          <Route path="products/:id" element={<ProductFormPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
         <Route path="/" element={<StorefrontLayout />}>

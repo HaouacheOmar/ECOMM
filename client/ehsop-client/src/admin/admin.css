@@ -37,3 +37,18 @@
   min-width: 0;
   padding: 24px 32px;
 }
+
+.admin-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.admin-photo {
+  margin: 0;
+}
+.admin-photo img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--bs-border-radius);
+}
