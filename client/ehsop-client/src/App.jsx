@@ -14,6 +14,8 @@ const ProductFormPage = lazy(() => import('./admin/ProductFormPage.jsx'))
 const CategoriesPage = lazy(() => import('./admin/CategoriesPage.jsx'))
 const AdminOrdersPage = lazy(() => import('./admin/AdminOrdersPage.jsx'))
 const AdminOrderPage = lazy(() => import('./admin/AdminOrderPage.jsx'))
+const EmployeesPage = lazy(() => import('./admin/EmployeesPage.jsx'))
+const ActivityPage = lazy(() => import('./admin/ActivityPage.jsx'))
 const PickupPointsPage = lazy(() => import('./admin/PickupPointsPage.jsx'))
 const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
 const CheckoutPage = lazy(() => import('./orders/CheckoutPage.jsx'))
@@ -46,6 +48,8 @@ export default function App() {
           <Route path="products/:id" element={<ProductFormPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="pickup-points" element={<PickupPointsPage />} />
+          <Route path="employees" element={<EmployeesPage />} />
+          <Route path="activity" element={<ActivityPage />} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
         <Route path="/" element={<StorefrontLayout />}>

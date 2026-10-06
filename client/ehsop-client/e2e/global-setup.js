@@ -17,6 +17,7 @@ for email, role in ${JSON.stringify(Object.values(USERS).map((u) => [u.email, u.
 
 # Accounts registered by earlier runs.
 User.objects.filter(email__startswith='new-', email__endswith='@e2e.test').delete()
+User.objects.filter(email__startswith='staff-', email__endswith='@e2e.test').delete()
 
 # Leftovers from earlier Admin-catalog runs.
 from products.models import Category, Product
