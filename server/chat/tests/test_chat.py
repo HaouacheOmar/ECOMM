@@ -91,21 +91,26 @@ async def test_the_first_reply_claims_the_customer_and_a_second_is_rejected():
     await send(bubble, 'Hello?', 'c-1')
     await reply_to(bubble, 'c-1')
 
+    # Both reply at once; whichever is saved first claims the Customer.
     await send(a, 'Hi, Amina here.', 'a-1', to=customer)
     await send(k, 'Hi, Karim here.', 'k-1', to=customer)
-    first, second = await reply_to(a, 'a-1'), await reply_to(k, 'k-1')
+    outcomes = {'Amina': (a, await reply_to(a, 'a-1')), 'Karim': (k, await reply_to(k, 'k-1'))}
 
-    assert first['type'] == 'ack'
-    assert second == {'type': 'error', 'client_id': 'k-1', 'code': 'taken', 'detail': 'Already taken by Amina.'}
-    removed, = await events_of(k, 'queue.removed')
-    assert removed['by']['name'] == 'Amina'
+    winners = [name for name, (_, r) in outcomes.items() if r['type'] == 'ack']
+    assert len(winners) == 1
+    winner = winners[0]
+    loser_socket, refused = next(v for name, v in outcomes.items() if name != winner)
+    assert (refused['code'], refused['detail']) == ('taken', f'Already taken by {winner}.')
+    removed, = await events_of(loser_socket, 'queue.removed')
+    assert removed['by']['name'] == winner
     received = [e['message']['body'] for e in await events_of(bubble, 'message', 2)]
-    assert received == ['Hello?', 'Hi, Amina here.']  # own message echoed to every tab, then the reply
+    assert received == ['Hello?', f'Hi, {winner} here.']  # own message echoed to every tab, then the reply
 
+    claimer = amina if winner == 'Amina' else karim
     assigned = await database_sync_to_async(lambda: User.objects.get(pk=customer.pk))()
-    assert assigned.assigned_employee_id == amina.pk and assigned.queued_at is None
-    assert await database_sync_to_async(lambda: api_get(amina, '/api/chat/queue/'))() == []
-    mine = await database_sync_to_async(lambda: api_get(amina, '/api/chat/customers/'))()
+    assert assigned.assigned_employee_id == claimer.pk and assigned.queued_at is None
+    assert await database_sync_to_async(lambda: api_get(claimer, '/api/chat/queue/'))() == []
+    mine = await database_sync_to_async(lambda: api_get(claimer, '/api/chat/customers/'))()
     assert [c['email'] for c in mine] == ['cust@eshop.test']
     for s in (bubble, a, k):
         await s.disconnect()
