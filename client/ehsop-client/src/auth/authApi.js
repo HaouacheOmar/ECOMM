@@ -14,6 +14,19 @@ export const authApi = api.injectEndpoints({
         }
       },
     }),
+    register: build.mutation({
+      query: (body) => ({ url: 'auth/register/', method: 'POST', body }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          dispatch(sessionStarted(data))
+        } catch {
+          // shown by the form
+        }
+      },
+    }),
+    verifyEmail: build.mutation({ query: (token) => ({ url: 'auth/verify/', method: 'POST', body: { token } }) }),
+    resendVerification: build.mutation({ query: () => ({ url: 'auth/verify/resend/', method: 'POST' }) }),
     logout: build.mutation({
       query: () => ({ url: 'auth/logout/', method: 'POST' }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
@@ -29,4 +42,11 @@ export const authApi = api.injectEndpoints({
   }),
 })
 
-export const { useLoginMutation, useLogoutMutation, useMeQuery } = authApi
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useVerifyEmailMutation,
+  useResendVerificationMutation,
+  useLogoutMutation,
+  useMeQuery,
+} = authApi

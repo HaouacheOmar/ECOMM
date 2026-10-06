@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import AnimatedOutlet from '../AnimatedOutlet.jsx'
 import LogoutButton from '../auth/LogoutButton.jsx'
+import VerifyEmailBanner from '../auth/VerifyEmailBanner.jsx'
 import CartDrawer from '../cart/CartDrawer.jsx'
 import { CartDrawerContext } from '../cart/CartDrawerContext.js'
 import useCart from '../cart/useCart.js'
@@ -49,6 +50,7 @@ export default function StorefrontLayout() {
             {signedIn && <LogoutButton />}
           </nav>
         </div>
+        <VerifyEmailBanner />
       </header>
       <main className="container-xl py-4">
         <AnimatedOutlet />

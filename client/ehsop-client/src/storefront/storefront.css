@@ -31,3 +31,32 @@
 .search-submit:hover {
   background: var(--es-accent-hover);
 }
+
+.verify-banner {
+  background: var(--es-shipped-bg);
+  color: var(--es-shipped);
+  font-size: 0.875rem;
+}
+
+/* Log in / Register tabs */
+.auth-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--es-canvas);
+}
+.auth-tab {
+  flex: 1;
+  border: 0;
+  border-radius: var(--bs-border-radius-pill);
+  background: transparent;
+  color: var(--es-muted);
+  padding: 8px 12px;
+  font-weight: 500;
+}
+.auth-tab[aria-selected='true'] {
+  background: var(--es-surface);
+  color: var(--es-text);
+  box-shadow: var(--es-shadow-sm);
+}

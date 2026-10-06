@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
 import AccountPage from './auth/AccountPage.jsx'
 import LoginPage from './auth/LoginPage.jsx'
+import VerifyEmailPage from './auth/VerifyEmailPage.jsx'
 import RequireRole from './auth/RequireRole.jsx'
 import HomePage from './storefront/HomePage.jsx'
 
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="products" element={<CatalogPage />} />
           <Route path="products/:id" element={<ProductPage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route path="verify/:token" element={<VerifyEmailPage />} />
           <Route path="account" element={<RequireRole role="CUSTOMER"><AccountPage /></RequireRole>} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
