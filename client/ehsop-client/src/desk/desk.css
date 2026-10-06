@@ -1,0 +1,35 @@
+.desk-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.desk-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  box-shadow: var(--es-shadow-sm);
+}
+.desk-panes {
+  flex-grow: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: 12px;
+  padding: 12px;
+}
+.desk-pane {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--es-shadow-card);
+  padding: 16px;
+  overflow: auto;
+}
+
+@media (max-width: 991.98px) {
+  .desk-panes {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(200px, auto);
+    overflow: auto;
+  }
+}

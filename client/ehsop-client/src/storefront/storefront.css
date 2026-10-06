@@ -1,0 +1,33 @@
+.storefront-header {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  box-shadow: var(--es-shadow-sm);
+}
+
+.search-pill {
+  position: relative;
+  max-width: 560px;
+}
+.search-pill .form-control {
+  padding: 0.6rem 3.5rem 0.6rem 1.25rem;
+}
+.search-submit {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--es-accent);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--es-shadow-accent);
+}
+.search-submit:hover {
+  background: var(--es-accent-hover);
+}

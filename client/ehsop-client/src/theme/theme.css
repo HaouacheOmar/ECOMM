@@ -1,0 +1,165 @@
+/* E-Shop design tokens (style reference: docx/SYSTEM_DESIN.md, contrast-checked).
+   Components use these variables or Bootstrap's; never raw hex. */
+
+:root,
+[data-bs-theme='light'] {
+  --es-canvas: #f2f4f5;
+  --es-surface: #ffffff;
+  --es-text: #000000;
+  --es-muted: #6b6867;
+  --es-hairline: #ebebeb;
+  --es-accent: #5433eb;
+  --es-accent-hover: #4527d6;
+  --es-accent-rgb: 84, 51, 235;
+  --es-link: #5433eb;
+  --es-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --es-shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --es-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.12);
+  --es-shadow-accent: 0 4px 24px rgba(69, 36, 219, 0.34);
+
+  /* Status: text / tinted background */
+  --es-confirmed: #166534;  --es-confirmed-bg: #dcfce7;
+  --es-shipped: #3f23c9;    --es-shipped-bg: #e9e5fd;
+  --es-delivered: #1e40af;  --es-delivered-bg: #dbeafe;
+  --es-cancelled: #991b1b;  --es-cancelled-bg: #fee2e2;
+  --es-online: #15803d;
+  --es-offline: #b91c1c;
+}
+
+[data-bs-theme='dark'] {
+  --es-canvas: #121212;
+  --es-surface: #1c1b1a;
+  --es-text: #f5f5f4;
+  --es-muted: #a8a29e;
+  --es-hairline: #2e2c2b;
+  --es-accent: #6d50f0;
+  --es-accent-hover: #7f66f3;
+  --es-accent-rgb: 109, 80, 240;
+  --es-link: #a594ff;
+  --es-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --es-shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --es-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --es-shadow-accent: 0 4px 24px rgba(109, 80, 240, 0.45);
+
+  --es-confirmed: #86efac;  --es-confirmed-bg: #14321f;
+  --es-shipped: #c4b5fd;    --es-shipped-bg: #2a1f5c;
+  --es-delivered: #93c5fd;  --es-delivered-bg: #172a4a;
+  --es-cancelled: #fca5a5;  --es-cancelled-bg: #3b1515;
+  --es-online: #4ade80;
+  --es-offline: #f87171;
+}
+
+/* Map tokens onto Bootstrap (same selectors, loaded after bootstrap.css, so these win). */
+:root,
+[data-bs-theme='light'],
+[data-bs-theme='dark'] {
+  --bs-body-bg: var(--es-canvas);
+  --bs-body-color: var(--es-text);
+  --bs-emphasis-color: var(--es-text);
+  --bs-secondary-color: var(--es-muted);
+  --bs-tertiary-bg: var(--es-canvas);
+  --bs-border-color: var(--es-hairline);
+  --bs-primary: var(--es-accent);
+  --bs-primary-rgb: var(--es-accent-rgb);
+  --bs-link-color: var(--es-link);
+  --bs-link-color-rgb: var(--es-accent-rgb);
+  --bs-link-hover-color: var(--es-accent-hover);
+  --bs-focus-ring-color: rgba(var(--es-accent-rgb), 0.4);
+  --bs-body-font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --bs-body-font-size: 1rem;
+  --bs-body-line-height: 1.5;
+  --bs-border-radius: 20px;
+  --bs-border-radius-lg: 28px;
+  --bs-border-radius-pill: 9999px;
+}
+
+body {
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, b, strong {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Pills: buttons, inputs, selects */
+.btn {
+  --bs-btn-border-radius: var(--bs-border-radius-pill);
+  --bs-btn-font-weight: 500;
+}
+.btn-primary {
+  --bs-btn-bg: var(--es-accent);
+  --bs-btn-border-color: var(--es-accent);
+  --bs-btn-hover-bg: var(--es-accent-hover);
+  --bs-btn-hover-border-color: var(--es-accent-hover);
+  --bs-btn-active-bg: var(--es-accent-hover);
+  --bs-btn-active-border-color: var(--es-accent-hover);
+  --bs-btn-disabled-bg: var(--es-accent);
+  --bs-btn-disabled-border-color: var(--es-accent);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
+}
+.form-control,
+.form-select {
+  border-radius: var(--bs-border-radius-pill);
+  background-color: var(--es-surface);
+}
+textarea.form-control {
+  border-radius: var(--bs-border-radius);
+}
+
+/* Cards float on the canvas: shadow, no border */
+.card {
+  --bs-card-bg: var(--es-surface);
+  --bs-card-border-width: 0;
+  --bs-card-border-radius: var(--bs-border-radius-lg);
+  --bs-card-inner-border-radius: var(--bs-border-radius-lg);
+  box-shadow: var(--es-shadow-card);
+}
+
+/* Order status badges and presence (colour + text, never colour alone) */
+.status-badge {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--bs-border-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.status-confirmed { color: var(--es-confirmed); background: var(--es-confirmed-bg); }
+.status-shipped   { color: var(--es-shipped);   background: var(--es-shipped-bg); }
+.status-delivered { color: var(--es-delivered); background: var(--es-delivered-bg); }
+.status-cancelled { color: var(--es-cancelled); background: var(--es-cancelled-bg); }
+.presence-online  { color: var(--es-online); }
+.presence-offline { color: var(--es-offline); }
+
+/* Layout helpers shared by the workspace shells */
+.surface {
+  background: var(--es-surface);
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--bs-border-radius-pill);
+  background: transparent;
+  color: var(--es-text);
+}
+.icon-btn:hover {
+  background: var(--es-canvas);
+}
+.wordmark {
+  font-weight: 600;
+  font-size: 1.25rem;
+  letter-spacing: -0.05em;
+  color: var(--es-text);
+  text-decoration: none;
+}
+.wordmark::after {
+  content: '.';
+  color: var(--es-accent);
+}
