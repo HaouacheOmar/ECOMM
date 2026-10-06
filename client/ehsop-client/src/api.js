@@ -50,6 +50,6 @@ async function baseQueryWithReauth(args, api, extraOptions) {
 // Feature slices inject their endpoints with api.injectEndpoints().
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Product', 'Category', 'Cart'],
+  tagTypes: ['Product', 'Category', 'Cart', 'Order', 'PickupPoint'],
   endpoints: () => ({}),
 })

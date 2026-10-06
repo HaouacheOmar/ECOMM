@@ -1,14 +1,19 @@
 from django.db import transaction
-from rest_framework import serializers
+from django.db.models import F, ProtectedError
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, serializers, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.permissions import IsCustomer
+from accounts.permissions import IsCustomer, ReadOnlyOrAdmin, is_admin
 from products.models import Product
 from products.serializers import ProductListSerializer
 
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Order, OrderItem, PickupPoint
+from .serializers import CheckoutSerializer, OrderSerializer, PickupPointSerializer
+from .tasks import send_order_confirmation
 
 MAX_LINES = 100
 
@@ -140,3 +145,92 @@ class CartPreviewView(APIView):
         products = sellable([line['product'] for line in data.validated_data['items']])
         lines = [(products[line['product']], line['quantity']) for line in data.validated_data['items'] if line['product'] in products]
         return Response(cart_payload(lines, request))
+
+
+class PickupPointViewSet(viewsets.ModelViewSet):
+    """Everyone reads the active Pickup Points; the Admin manages all of them."""
+
+    serializer_class = PickupPointSerializer
+    permission_classes = [ReadOnlyOrAdmin]
+    pagination_class = None
+
+    def get_queryset(self):
+        points = PickupPoint.objects.all()
+        return points if is_admin(self.request.user) else points.filter(is_active=True)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response({'detail': 'Orders use this pickup point. Deactivate it instead.'}, status=409)
+
+
+class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
+    """A Customer's Orders. POST is checkout: the whole Cart becomes one Confirmed Order."""
+
+    serializer_class = OrderSerializer
+    permission_classes = [IsCustomer]
+
+    def get_queryset(self):
+        return (
+            Order.objects.filter(customer=self.request.user)
+            .select_related('pickup_point')
+            .prefetch_related('items__product__images')
+        )
+
+    def respond(self, order, status=200):
+        return Response(self.get_serializer(self.get_queryset().get(pk=order.pk)).data, status=status)
+
+    def create(self, request):
+        if not request.user.is_email_verified:
+            return Response({'detail': 'Verify your email before confirming an order.', 'code': 'email_not_verified'}, status=403)
+        checkout = CheckoutSerializer(data=request.data)
+        checkout.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            cart = Cart.objects.select_for_update().filter(customer=request.user).first()
+            lines = list(cart.items.all()) if cart else []
+            if not lines:
+                return Response({'detail': 'Your cart is empty.'}, status=400)
+            # Lock the Products in a fixed order so concurrent checkouts queue instead of deadlocking.
+            locked = Product.objects.select_for_update().filter(pk__in=[line.product_id for line in lines]).order_by('pk')
+            products = {p.pk: p for p in locked}
+            short = [
+                {'product': str(p.pk), 'available': 0 if p.is_archived else p.stock}
+                for line in lines
+                if (p := products[line.product_id]).is_archived or line.quantity > p.stock
+            ]
+            if short:
+                return Response(
+                    {'detail': 'Some items are no longer available in that quantity.', 'code': 'out_of_stock', 'items': short},
+                    status=409,
+                )
+
+            order = Order.objects.create(
+                customer=request.user,
+                total_amount=sum(products[line.product_id].price * line.quantity for line in lines),
+                **checkout.validated_data,
+            )
+            OrderItem.objects.bulk_create(
+                OrderItem(order=order, product_id=line.product_id, quantity=line.quantity, price_at_purchase=products[line.product_id].price)
+                for line in lines
+            )
+            for line in lines:
+                Product.objects.filter(pk=line.product_id).update(stock=F('stock') - line.quantity)
+            cart.items.all().delete()
+            transaction.on_commit(lambda: send_order_confirmation.delay(str(order.pk)))
+
+        return self.respond(order, status=201)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """Before it is Shipped, an Order can be cancelled and its stock goes back on sale."""
+        with transaction.atomic():
+            order = get_object_or_404(Order.objects.select_for_update().filter(customer=request.user), pk=pk)
+            if order.status != Order.Status.CONFIRMED:
+                return Response({'detail': 'This order can no longer be cancelled.', 'code': 'not_cancellable'}, status=409)
+            order.status = Order.Status.CANCELLED
+            order.save(update_fields=['status'])
+            for item in order.items.all():
+                Product.objects.filter(pk=item.product_id).update(stock=F('stock') + item.quantity)
+        return self.respond(order)

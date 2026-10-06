@@ -15,9 +15,13 @@ async function call(request, who, method, path, data) {
   return response.status() === 204 ? null : response.json()
 }
 
-export async function productId(request, name) {
+export async function findProduct(request, name) {
   const found = await call(request, 'admin', 'GET', `products/?include_archived=1&search=${encodeURIComponent(name)}`)
-  return found.results.find((p) => p.name === name).id
+  return found.results.find((p) => p.name === name)
+}
+
+export async function productId(request, name) {
+  return (await findProduct(request, name)).id
 }
 
 export async function updateProduct(request, name, changes) {

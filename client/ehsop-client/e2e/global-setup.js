@@ -11,7 +11,7 @@ export default function globalSetup() {
 from accounts.models import User
 for email, role in ${JSON.stringify(Object.values(USERS).map((u) => [u.email, u.role]))}:
     user, _ = User.objects.get_or_create(email=email, defaults={'role': role})
-    user.role, user.is_active = role, True
+    user.role, user.is_active, user.is_email_verified = role, True, True
     user.set_password(${JSON.stringify(PASSWORD)})
     user.save()
 
@@ -41,6 +41,18 @@ for name, category, price, stock, archived in [
         'category': category, 'price': Decimal(price), 'stock': stock, 'is_archived': archived,
         'description': f'{name} for end-to-end tests.',
     })
+
+# Checkout fixtures, outside the "E2E" catalog so catalog specs are unaffected; stock reset every run.
+decor, _ = Category.objects.get_or_create(name='Home decor')
+for name, stock in [('Checkout Vase', 50), ('Checkout Candle', 1)]:
+    Product.objects.update_or_create(name=name, defaults={
+        'category': decor, 'price': Decimal('2000'), 'stock': stock, 'is_archived': False,
+    })
+from orders.models import PickupPoint
+PickupPoint.objects.filter(name__startswith='Test pickup ').delete()
+PickupPoint.objects.update_or_create(name='E2E Hydra office', defaults={
+    'city': 'Algiers', 'address': '12 Rue Didouche Mourad', 'is_active': True,
+})
 `
   execFileSync(PYTHON, ['manage.py', 'shell', '-c', script], { cwd, stdio: 'inherit' })
 }

@@ -4,13 +4,8 @@ import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ProductImage } from '../products/bits.jsx'
 import { formatPrice } from '../products/formatPrice.js'
-import useCart from './useCart.js'
+import useCart, { unavailableNote } from './useCart.js'
 import './cart.css'
-
-function unavailableNote({ product }) {
-  if (product.stock === 0) return 'Sold out. Remove it to continue.'
-  return `Only ${product.stock} left. Reduce the quantity to ${product.stock} to continue.`
-}
 
 function CartLine({ line, onNavigate }) {
   const { setQuantity, remove } = useCart()

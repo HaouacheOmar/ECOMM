@@ -3,6 +3,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAddToCartMutation, useCartQuery, usePreviewCartQuery, useRemoveFromCartMutation, useSetCartQuantityMutation } from './cartApi.js'
 import { added, pruned, quantitySet, removed } from './guestCartSlice.js'
 
+export function unavailableNote({ product }) {
+  if (product.stock === 0) return 'Sold out. Remove it to continue.'
+  return `Only ${product.stock} left. Reduce the quantity to ${product.stock} to continue.`
+}
+
 const EMPTY = { items: [], count: 0, subtotal: '0' }
 
 // One Cart interface for the storefront: the saved Cart for a Customer, the browser Cart for everyone else.

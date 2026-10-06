@@ -12,7 +12,10 @@ const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
 const AdminProductsPage = lazy(() => import('./admin/AdminProductsPage.jsx'))
 const ProductFormPage = lazy(() => import('./admin/ProductFormPage.jsx'))
 const CategoriesPage = lazy(() => import('./admin/CategoriesPage.jsx'))
+const PickupPointsPage = lazy(() => import('./admin/PickupPointsPage.jsx'))
 const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
+const CheckoutPage = lazy(() => import('./orders/CheckoutPage.jsx'))
+const MyOrdersPage = lazy(() => import('./orders/MyOrdersPage.jsx'))
 const ProductPage = lazy(() => import('./products/ProductPage.jsx'))
 
 function Placeholder({ title }) {
@@ -38,6 +41,7 @@ export default function App() {
           <Route path="products/new" element={<ProductFormPage />} />
           <Route path="products/:id" element={<ProductFormPage />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="pickup-points" element={<PickupPointsPage />} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
         <Route path="/" element={<StorefrontLayout />}>
@@ -47,6 +51,8 @@ export default function App() {
           <Route path="login" element={<LoginPage />} />
           <Route path="verify/:token" element={<VerifyEmailPage />} />
           <Route path="account" element={<RequireRole role="CUSTOMER"><AccountPage /></RequireRole>} />
+          <Route path="checkout" element={<RequireRole role="CUSTOMER"><CheckoutPage /></RequireRole>} />
+          <Route path="orders" element={<RequireRole role="CUSTOMER"><MyOrdersPage /></RequireRole>} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
       </Routes>

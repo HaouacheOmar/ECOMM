@@ -8,7 +8,9 @@ export default function RequireRole({ role, children }) {
   const location = useLocation()
 
   if (status === 'unknown') return null
-  if (status === 'anonymous') return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  // During the route transition this guarded page is still mounted while exiting and sees the new
+  // location; redirecting again from /login would overwrite the page to return to.
+  if (status === 'anonymous') return location.pathname === '/login' ? null : <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (user.role !== role) return <Navigate to={HOME_BY_ROLE[user.role]} replace />
   return children
 }
