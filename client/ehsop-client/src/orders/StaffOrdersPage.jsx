@@ -1,13 +1,16 @@
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { StatusBadge } from '../orders/bits.jsx'
-import { orderNumber, placedOn, useOrdersQuery } from '../orders/ordersApi.js'
+import { StatusBadge } from './bits.jsx'
+import { orderNumber, placedOn, useOrdersQuery } from './ordersApi.js'
 import { formatPrice } from '../products/formatPrice.js'
+import './orders.css'
 
 const PAGE_SIZE = 20
 const FILTERS = [['', 'All'], ['CONFIRMED', 'Confirmed'], ['SHIPPED', 'Shipped'], ['DELIVERED', 'Delivered'], ['CANCELLED', 'Cancelled']]
 
-export default function AdminOrdersPage() {
+// All Orders for the Admin and Employees (mounted at /admin/orders and /desk/orders); updates live.
+export default function StaffOrdersPage() {
   const [status, setStatus] = useState('')
   const [term, setTerm] = useState('')
   const [search, setSearch] = useState('')
@@ -46,16 +49,20 @@ export default function AdminOrdersPage() {
             <tr><th scope="col">Order</th><th scope="col">Placed</th><th scope="col">Customer</th><th scope="col">Delivery</th><th scope="col">Total</th><th scope="col">Status</th></tr>
           </thead>
           <tbody>
+            <AnimatePresence initial={false}>
             {data?.results.map((o) => (
-              <tr key={o.id}>
-                <td><Link to={`/admin/orders/${o.id}`}>Order {orderNumber(o)}</Link></td>
+              <motion.tr key={o.id} layout="position" initial={{ opacity: 0, transform: 'translateY(-8px)' }}
+                animate={{ opacity: 1, transform: 'translateY(0px)' }} exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}>
+                <td><Link to={o.id}>Order {orderNumber(o)}</Link></td>
                 <td className="small">{placedOn.format(new Date(o.created_at))}</td>
                 <td className="small">{o.customer}</td>
                 <td className="small">{o.delivery_method === 'HOME_DELIVERY' ? 'Home Delivery' : `Pickup, ${o.pickup_point.city}`}</td>
                 <td>{formatPrice(o.total_amount)}</td>
                 <td><StatusBadge status={o.status} /></td>
-              </tr>
+              </motion.tr>
             ))}
+            </AnimatePresence>
             {data?.count === 0 && <tr><td colSpan={6} className="text-center text-body-secondary py-4">No orders found.</td></tr>}
           </tbody>
         </table>

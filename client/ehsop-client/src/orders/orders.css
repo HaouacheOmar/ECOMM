@@ -94,3 +94,25 @@
     transition: none;
   }
 }
+
+/* Status filter: a row of pills, the pressed one filled */
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-pill {
+  padding: 6px 16px;
+  border: 1px solid var(--es-hairline);
+  border-radius: var(--bs-border-radius-pill);
+  background: var(--es-surface);
+  color: var(--es-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--es-shadow-sm);
+}
+.filter-pill[aria-pressed='true'] {
+  border-color: var(--es-text);
+  background: var(--es-text);
+  color: var(--es-surface);
+}

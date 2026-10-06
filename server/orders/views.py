@@ -13,6 +13,7 @@ from products.serializers import ProductListSerializer
 
 from .models import Cart, CartItem, Order, OrderItem, PickupPoint
 from .serializers import CheckoutSerializer, OrderSerializer, PickupPointSerializer
+from .live import broadcast
 from .tasks import send_order_confirmation
 
 MAX_LINES = 100
@@ -189,8 +190,11 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
         status = self.request.query_params.get('status')
         return orders.filter(status=status) if status else orders
 
-    def respond(self, order, status=200):
-        return Response(self.get_serializer(self.get_queryset().get(pk=order.pk)).data, status=status)
+    def respond(self, order, event, status=200):
+        """Answer with the fresh Order and push the same data to the live feed (after commit)."""
+        data = self.get_serializer(self.get_queryset().get(pk=order.pk)).data
+        broadcast(event, data, order.customer_id)
+        return Response(data, status=status)
 
     def create(self, request):
         if not request.user.is_email_verified:
@@ -231,7 +235,7 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             cart.items.all().delete()
             transaction.on_commit(lambda: send_order_confirmation.delay(str(order.pk)))
 
-        return self.respond(order, status=201)
+        return self.respond(order, 'order.created', status=201)
 
     def move(self, pk, to):
         """Confirmed -> Shipped -> Delivered, or Confirmed -> Cancelled (which puts the stock back)."""
@@ -244,7 +248,7 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             if to == Order.Status.CANCELLED:
                 for item in order.items.all():
                     Product.objects.filter(pk=item.product_id).update(stock=F('stock') + item.quantity)
-        return self.respond(order)
+        return self.respond(order, 'order.updated')
 
     @action(detail=True, methods=['post'])
     def ship(self, request, pk=None):

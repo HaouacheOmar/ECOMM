@@ -2,6 +2,7 @@ import { Activity, LayoutDashboard, MapPin, Package, ReceiptText, Tags, UserCog,
 import { NavLink } from 'react-router-dom'
 import AnimatedOutlet from '../AnimatedOutlet.jsx'
 import LogoutButton from '../auth/LogoutButton.jsx'
+import useLiveOrders from '../orders/useLiveOrders.js'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
 import './admin.css'
 
@@ -16,6 +17,7 @@ const NAV = [
 ]
 
 export default function AdminLayout() {
+  useLiveOrders()
   return (
     <div className="admin-shell">
       <nav className="icon-rail surface" aria-label="Admin">

@@ -12,8 +12,10 @@ const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'))
 const AdminProductsPage = lazy(() => import('./admin/AdminProductsPage.jsx'))
 const ProductFormPage = lazy(() => import('./admin/ProductFormPage.jsx'))
 const CategoriesPage = lazy(() => import('./admin/CategoriesPage.jsx'))
-const AdminOrdersPage = lazy(() => import('./admin/AdminOrdersPage.jsx'))
-const AdminOrderPage = lazy(() => import('./admin/AdminOrderPage.jsx'))
+const DashboardPage = lazy(() => import('./admin/DashboardPage.jsx'))
+const StaffOrdersPage = lazy(() => import('./orders/StaffOrdersPage.jsx'))
+const StaffOrderPage = lazy(() => import('./orders/StaffOrderPage.jsx'))
+const DeskHome = lazy(() => import('./desk/DeskHome.jsx'))
 const EmployeesPage = lazy(() => import('./admin/EmployeesPage.jsx'))
 const ActivityPage = lazy(() => import('./admin/ActivityPage.jsx'))
 const PickupPointsPage = lazy(() => import('./admin/PickupPointsPage.jsx'))
@@ -37,12 +39,17 @@ export default function App() {
   return (
     <Suspense fallback={null}>
       <Routes>
-        <Route path="/desk/*" element={<RequireRole role="EMPLOYEE"><DeskLayout /></RequireRole>} />
+        <Route path="/desk" element={<RequireRole role="EMPLOYEE"><DeskLayout /></RequireRole>}>
+          <Route index element={<DeskHome />} />
+          <Route path="orders" element={<div className="desk-page"><StaffOrdersPage /></div>} />
+          <Route path="orders/:id" element={<div className="desk-page"><StaffOrderPage /></div>} />
+          <Route path="account" element={<div className="desk-page"><AccountPage /></div>} />
+        </Route>
         <Route path="/admin" element={<RequireRole role="ADMIN"><AdminLayout /></RequireRole>}>
-          <Route index element={<Placeholder title="Dashboard" />} />
+          <Route index element={<DashboardPage />} />
           <Route path="account" element={<AccountPage />} />
-          <Route path="orders" element={<AdminOrdersPage />} />
-          <Route path="orders/:id" element={<AdminOrderPage />} />
+          <Route path="orders" element={<StaffOrdersPage />} />
+          <Route path="orders/:id" element={<StaffOrderPage />} />
           <Route path="products" element={<AdminProductsPage />} />
           <Route path="products/new" element={<ProductFormPage />} />
           <Route path="products/:id" element={<ProductFormPage />} />

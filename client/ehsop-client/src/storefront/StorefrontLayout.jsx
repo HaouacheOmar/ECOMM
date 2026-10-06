@@ -8,6 +8,7 @@ import VerifyEmailBanner from '../auth/VerifyEmailBanner.jsx'
 import CartDrawer from '../cart/CartDrawer.jsx'
 import { CartDrawerContext } from '../cart/CartDrawerContext.js'
 import useCart from '../cart/useCart.js'
+import useLiveOrders from '../orders/useLiveOrders.js'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
 import SearchBar from './SearchBar.jsx'
 import './storefront.css'
@@ -29,6 +30,7 @@ function CartButton({ onClick }) {
 
 export default function StorefrontLayout() {
   const signedIn = useSelector((state) => state.auth.status === 'authenticated')
+  useLiveOrders() // a Customer's My Orders follows Shipped/Delivered live
   const [cartOpen, setCartOpen] = useState(false)
   const open = useCallback(() => setCartOpen(true), [])
   const close = useCallback(() => setCartOpen(false), [])

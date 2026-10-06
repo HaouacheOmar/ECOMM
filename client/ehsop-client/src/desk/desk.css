@@ -9,9 +9,35 @@
   padding: 8px 16px;
   box-shadow: var(--es-shadow-sm);
 }
-.desk-panes {
+.desk-nav {
+  display: flex;
+  gap: 4px;
+}
+.desk-nav a {
+  padding: 6px 14px;
+  border-radius: var(--bs-border-radius-pill);
+  color: var(--es-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+.desk-nav a:hover,
+.desk-nav a.active {
+  background: var(--es-canvas);
+  color: var(--es-text);
+}
+.desk-main {
   flex-grow: 1;
   min-height: 0;
+  overflow: auto;
+}
+.desk-main > div {
+  height: 100%;
+}
+.desk-page {
+  padding: 24px 32px;
+}
+.desk-panes {
+  height: 100%;
   display: grid;
   grid-template-columns: 280px 1fr 320px;
   gap: 12px;

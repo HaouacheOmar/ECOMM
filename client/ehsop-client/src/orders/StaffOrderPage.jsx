@@ -1,7 +1,7 @@
 import { ArrowLeft, PackageCheck, Truck, XCircle } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { Delivery, StatusBadge } from '../orders/bits.jsx'
-import { orderNumber, placedOn, useMoveOrderMutation, useOrderQuery } from '../orders/ordersApi.js'
+import { Delivery, StatusBadge } from './bits.jsx'
+import { orderNumber, placedOn, useMoveOrderMutation, useOrderQuery } from './ordersApi.js'
 import { ProductImage } from '../products/bits.jsx'
 import { formatPrice } from '../products/formatPrice.js'
 import '../cart/cart.css'
@@ -13,7 +13,8 @@ const MOVES = {
   SHIPPED: [['deliver', 'Mark as delivered', PackageCheck, 'btn-primary']],
 }
 
-export default function AdminOrderPage() {
+// One Order for the Admin and Employees, with the moves its status allows.
+export default function StaffOrderPage() {
   const { id } = useParams()
   const { data: order, error } = useOrderQuery(id)
   const [move, moving] = useMoveOrderMutation()
@@ -28,7 +29,7 @@ export default function AdminOrderPage() {
 
   return (
     <section style={{ maxWidth: 820 }}>
-      <Link to="/admin/orders" className="d-inline-flex align-items-center gap-1 small mb-2"><ArrowLeft size={16} aria-hidden /> All orders</Link>
+      <Link to=".." relative="path" className="d-inline-flex align-items-center gap-1 small mb-2"><ArrowLeft size={16} aria-hidden /> All orders</Link>
       <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
         <h1 className="h3 mb-0">{title}</h1>
         <StatusBadge status={order.status} />

@@ -1,29 +1,26 @@
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
+import AnimatedOutlet from '../AnimatedOutlet.jsx'
 import LogoutButton from '../auth/LogoutButton.jsx'
+import useLiveOrders from '../orders/useLiveOrders.js'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
 import './desk.css'
 
-// Employee support desk: Queue + my Customers | conversation | that Customer's Orders.
+// Employee workspace: the support desk plus the Orders list, kept live by the orders socket.
 export default function DeskLayout() {
+  useLiveOrders()
   return (
     <div className="desk-shell">
       <header className="desk-header surface">
-        <Link to="/desk" className="wordmark">eshop</Link>
-        <span className="text-body-secondary ms-2">Support desk</span>
+        <NavLink to="/desk" end className="wordmark">eshop</NavLink>
+        <span className="text-body-secondary ms-2 me-3">Support desk</span>
+        <nav className="desk-nav" aria-label="Desk">
+          <NavLink to="/desk" end>Desk</NavLink>
+          <NavLink to="/desk/orders">Orders</NavLink>
+        </nav>
         <div className="ms-auto d-flex"><ThemeToggle /><LogoutButton /></div>
       </header>
-      <main className="desk-panes">
-        <section className="desk-pane surface" aria-label="Support Queue and my Customers">
-          <h2 className="h6">Support Queue</h2>
-          <p className="text-body-secondary small mb-0">No Customers waiting.</p>
-        </section>
-        <section className="desk-pane surface" aria-label="Conversation">
-          <p className="text-body-secondary m-auto">Select a Customer to start.</p>
-        </section>
-        <section className="desk-pane surface" aria-label="Customer's Orders">
-          <h2 className="h6">Orders</h2>
-          <p className="text-body-secondary small mb-0">Nothing selected.</p>
-        </section>
+      <main className="desk-main">
+        <AnimatedOutlet />
       </main>
     </div>
   )
