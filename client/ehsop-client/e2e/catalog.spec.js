@@ -7,21 +7,21 @@ test('guest searches from the header and results update after typing', async ({ 
   await page.goto('/#/')
   await page.getByLabel('Search products').fill('E2E')
   await expect(page).toHaveURL(/#\/products\?search=E2E$/)
-  await expect(page.getByRole('status')).toHaveText('3 products found')
+  await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('3 products found')
   expect(await cardNames(page)).toEqual(expect.arrayContaining(['E2E Mug', 'E2E Tote', 'E2E Board']))
 })
 
 test('archived products are never shown', async ({ page }) => {
   await page.goto('/#/products?search=E2E')
   await expect(page.getByLabel('Search products')).toHaveValue('E2E')
-  await expect(page.getByRole('status')).toHaveText('3 products found')
+  await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('3 products found')
   await expect(page.getByText('E2E Archived Lamp')).toHaveCount(0)
 })
 
 test('filter by category and sort by price', async ({ page }) => {
   await page.goto('/#/products?search=E2E')
   await page.getByRole('group', { name: 'Categories' }).getByRole('button', { name: 'Kitchen' }).click()
-  await expect(page.getByRole('status')).toHaveText('2 products found')
+  await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('2 products found')
 
   await page.getByLabel('Sort by').selectOption({ label: 'Price: high to low' })
   await expect(cards(page).first()).toContainText('E2E Board')

@@ -34,7 +34,7 @@ test('admin creates a product with a photo, then archives and restores it', asyn
   await page.getByRole('button', { name: 'Archive' }).click()
   await expect(page.getByText('Archived', { exact: true })).toBeVisible()
   await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
-  await expect(page.getByRole('status')).toHaveText('0 products found')
+  await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('0 products found')
 
   // Still listed for the Admin, and restorable.
   await page.goto('/#/admin/products')
@@ -43,7 +43,7 @@ test('admin creates a product with a photo, then archives and restores it', asyn
   await page.getByRole('link', { name }).click()
   await page.getByRole('button', { name: 'Restore' }).click()
   await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
-  await expect(page.getByRole('status')).toHaveText('1 product found')
+  await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('1 product found')
 })
 
 test('product form shows validation errors next to fields', async ({ page }) => {

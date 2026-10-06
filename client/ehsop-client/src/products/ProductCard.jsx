@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
+import AddToCartButton from '../cart/AddToCartButton.jsx'
 import { ProductImage, Rating } from './bits.jsx'
 import { formatPrice } from './formatPrice.js'
 
@@ -18,7 +19,7 @@ export default function ProductCard({ product }) {
       <Rating value={product.rating_avg} count={product.review_count} />
       <div className="d-flex justify-content-between align-items-center mt-2">
         <span className="product-price">{formatPrice(product.price)}</span>
-        {!product.in_stock && <span className="badge-out">Out of stock</span>}
+        <AddToCartButton product={product} className="btn btn-primary btn-sm card-action" />
       </div>
     </motion.article>
   )
