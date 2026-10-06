@@ -40,7 +40,7 @@ test('out of stock products stay listed and are marked', async ({ page }) => {
 test('product page shows details', async ({ page }) => {
   await page.goto('/#/products?search=E2E Mug')
   await page.getByRole('article', { name: 'E2E Mug' }).getByRole('link').click()
-  await expect(page.getByRole('heading', { name: 'E2E Mug' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'E2E Mug' })).toBeVisible()
   await expect(page.getByText('1 200 DA')).toBeVisible()
   await expect(page.getByText('Only 5 left')).toBeVisible()
   await expect(page.getByText('E2E Mug for end-to-end tests.')).toBeVisible()
