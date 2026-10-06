@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'products',
     'orders',
     'chat',
+    'demo',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +126,12 @@ CELERY_BEAT_SCHEDULE = {
     'precompute-bestsellers': {'task': 'products.tasks.precompute_bestsellers', 'schedule': 15 * 60},
     'refresh-recommendations': {'task': 'products.tasks.refresh_recommendations', 'schedule': crontab(hour=3, minute=0)},
 }
+
+# Portfolio demo: "Try as ..." logins and simulated shop activity (seed it with `manage.py seed_demo`).
+DEMO_MODE = env('DEMO_MODE', '0') == '1'
+if DEMO_MODE:
+    # A random Order or Customer chat message about every 45 s (the middle of 30-60 s).
+    CELERY_BEAT_SCHEDULE['simulate-activity'] = {'task': 'demo.tasks.simulate_activity', 'schedule': 45}
 
 
 # Password validation

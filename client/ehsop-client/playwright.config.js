@@ -4,6 +4,12 @@ const CI = !!process.env.CI
 // Python that runs the Django server (repo venv locally, system python in CI).
 export const PYTHON = process.env.E2E_PYTHON ?? (process.platform === 'win32' ? '..\\venv\\Scripts\\python.exe' : 'python')
 
+// E2E keeps its own database and Redis DB, apart from the dev/demo data. Every Django process it
+// starts inherits these: the server, global setup and the test helpers.
+process.env.DB_NAME ??= 'eshop_e2e'
+process.env.REDIS_URL = (process.env.REDIS_URL ?? 'redis://localhost:6379/0').replace(/\/\d+$/, '/1')
+process.env.DEMO_MODE = '1' // the "Try as ..." logins and simulated activity are under test too
+
 // E2E runs its own backend (8001) and Vite (5174) so it never collides with dev servers on 8000/5173.
 const API_PORT = 8001
 const WEB_PORT = 5174
@@ -23,7 +29,8 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: `${PYTHON} manage.py runserver ${API_PORT} --noreload`,
+      // The E2E database is created and migrated first (web servers start before global setup).
+      command: `${PYTHON} ../client/ehsop-client/e2e/create_db.py && ${PYTHON} manage.py migrate --noinput && ${PYTHON} manage.py runserver ${API_PORT} --noreload`,
       cwd: '../../server',
       url: `http://localhost:${API_PORT}/api/schema/`,
       reuseExistingServer: !CI,
@@ -31,6 +38,9 @@ export default defineConfig({
         // Short access tokens so tests exercise the transparent refresh.
         JWT_ACCESS_SECONDS: '5',
         CHAT_OFFLINE_GRACE: '2',
+        DB_NAME: process.env.DB_NAME,
+        REDIS_URL: process.env.REDIS_URL,
+        DEMO_MODE: '1',
         FRONTEND_ORIGIN: `http://localhost:${WEB_PORT}`,
       },
     },

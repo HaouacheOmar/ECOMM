@@ -36,14 +36,14 @@ test('a customer and an employee chat live, and the reply claims the customer', 
   // The reply reaches the Customer live and moves them from the Queue to "My Customers".
   await say(conversation, 'Hi! It ships today.')
   await expect(panel(page).getByRole('listitem').filter({ hasText: 'Hi! It ships today.' })).toContainText('employee@e2e.test')
-  await expect(queue(desk).getByRole('listitem')).toHaveCount(0)
+  await expect(queue(desk).getByRole('button', { name: /customer@e2e\.test/ })).toHaveCount(0) // (other Customers may wait too)
   await expect(mine(desk).getByRole('button', { name: /customer@e2e\.test/ })).toBeVisible()
 
   // After both sockets outlive their 5 s tokens, a follow-up goes straight to the Assigned Employee.
   await page.waitForTimeout(7000)
   await say(panel(page), 'Thanks!')
   await expect(conversation.getByRole('listitem').filter({ hasText: 'Thanks!' })).toBeVisible()
-  await expect(queue(desk).getByRole('listitem')).toHaveCount(0)
+  await expect(queue(desk).getByRole('button', { name: /customer@e2e\.test/ })).toHaveCount(0)
   await desk.close()
 })
 

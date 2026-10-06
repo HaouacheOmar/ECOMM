@@ -38,7 +38,10 @@ class ProductListSerializer(serializers.ModelSerializer):
     def get_image(self, product):
         # images are prefetched and ordered primary-first
         first = next(iter(product.images.all()), None)
-        return self.context['request'].build_absolute_uri(first.image.url) if first else None
+        if first is None:
+            return None
+        request = self.context.get('request')  # absent for pushes made outside a request (e.g. Celery)
+        return request.build_absolute_uri(first.image.url) if request else first.image.url
 
 
 class ProductDetailSerializer(ProductListSerializer):

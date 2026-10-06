@@ -60,3 +60,9 @@
   color: var(--es-text);
   box-shadow: var(--es-shadow-sm);
 }
+
+/* Demo shortcuts on the login page */
+.try-as {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--es-hairline);
+}

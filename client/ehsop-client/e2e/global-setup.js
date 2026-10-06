@@ -56,4 +56,6 @@ PickupPoint.objects.update_or_create(name='E2E Hydra office', defaults={
 })
 `
   execFileSync(PYTHON, ['manage.py', 'shell', '-c', script], { cwd, stdio: 'inherit' })
+  // The demo shop too (a no-op once seeded), for the "Try as ..." and simulated-activity specs.
+  execFileSync(PYTHON, ['manage.py', 'seed_demo'], { cwd, stdio: 'inherit' })
 }

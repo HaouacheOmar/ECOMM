@@ -9,13 +9,11 @@ from rest_framework.views import APIView
 
 from accounts.permissions import IsCustomer, IsStaff, ReadOnlyOrAdmin, is_admin, is_staff_member
 from products.models import Product
-from products.recommendations import purchases_changed
 from products.serializers import ProductListSerializer
 
-from .live import broadcast
-from .models import Cart, CartItem, Order, OrderItem, PickupPoint
+from .checkout import EmptyCart, OutOfStock, announce, place_order
+from .models import Cart, CartItem, Order, PickupPoint
 from .serializers import CheckoutSerializer, OrderSerializer, PickupPointSerializer
-from .tasks import send_order_confirmation
 
 MAX_LINES = 100
 
@@ -195,52 +193,20 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
         return orders
 
     def respond(self, order, event, status=200):
-        """Answer with the fresh Order and push the same data to the live feed (after commit)."""
-        data = self.get_serializer(self.get_queryset().get(pk=order.pk)).data
-        broadcast(event, data, order.customer_id)
-        if event == 'order.created' or data['status'] == Order.Status.CANCELLED:
-            purchases_changed(order.customer_id)
-        return Response(data, status=status)
+        """Answer with the fresh Order; the same data goes to the live feeds."""
+        return Response(announce(order, event, self.request), status=status)
 
     def create(self, request):
         if not request.user.is_email_verified:
             return Response({'detail': 'Verify your email before confirming an order.', 'code': 'email_not_verified'}, status=403)
         checkout = CheckoutSerializer(data=request.data)
         checkout.is_valid(raise_exception=True)
-
-        with transaction.atomic():
-            cart = Cart.objects.select_for_update().filter(customer=request.user).first()
-            lines = list(cart.items.all()) if cart else []
-            if not lines:
-                return Response({'detail': 'Your cart is empty.'}, status=400)
-            # Lock the Products in a fixed order so concurrent checkouts queue instead of deadlocking.
-            locked = Product.objects.select_for_update().filter(pk__in=[line.product_id for line in lines]).order_by('pk')
-            products = {p.pk: p for p in locked}
-            short = [
-                {'product': str(p.pk), 'available': 0 if p.is_archived else p.stock}
-                for line in lines
-                if (p := products[line.product_id]).is_archived or line.quantity > p.stock
-            ]
-            if short:
-                return Response(
-                    {'detail': 'Some items are no longer available in that quantity.', 'code': 'out_of_stock', 'items': short},
-                    status=409,
-                )
-
-            order = Order.objects.create(
-                customer=request.user,
-                total_amount=sum(products[line.product_id].price * line.quantity for line in lines),
-                **checkout.validated_data,
-            )
-            OrderItem.objects.bulk_create(
-                OrderItem(order=order, product_id=line.product_id, quantity=line.quantity, price_at_purchase=products[line.product_id].price)
-                for line in lines
-            )
-            for line in lines:
-                Product.objects.filter(pk=line.product_id).update(stock=F('stock') - line.quantity)
-            cart.items.all().delete()
-            transaction.on_commit(lambda: send_order_confirmation.delay(str(order.pk)))
-
+        try:
+            order = place_order(request.user, checkout.validated_data)
+        except EmptyCart:
+            return Response({'detail': 'Your cart is empty.'}, status=400)
+        except OutOfStock as short:
+            return Response({'detail': str(short), 'code': 'out_of_stock', 'items': short.items}, status=409)
         return self.respond(order, 'order.created', status=201)
 
     def move(self, pk, to):

@@ -54,3 +54,12 @@ product.reviews.all().delete()
 Product.objects.filter(pk=product.pk).update(rating_avg=0, review_count=0)
 print('ok')`)
 }
+
+// One round of the demo's simulated activity (as Celery Beat would run it), published through the
+// same Redis as the E2E server, so open pages receive it live.
+export function simulateActivity(kind, customerEmail) {
+  djangoShell(`
+from demo.tasks import simulate_activity
+simulate_activity(${JSON.stringify(kind)}, ${JSON.stringify(customerEmail)})
+print('ok')`)
+}

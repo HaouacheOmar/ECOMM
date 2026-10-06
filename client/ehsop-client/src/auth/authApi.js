@@ -39,6 +39,18 @@ export const authApi = api.injectEndpoints({
       queryFn: (_, apiCtx, extraOptions) => refreshSession(apiCtx, extraOptions),
     }),
     me: build.query({ query: () => 'me/' }),
+    demo: build.query({ query: () => 'demo/' }),
+    // DEMO_MODE only: sign in as the demo Customer, Employee or Admin.
+    demoLogin: build.mutation({
+      query: (role) => ({ url: 'demo/login/', method: 'POST', body: { role } }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          dispatch(sessionStarted((await queryFulfilled).data))
+        } catch {
+          // shown by the buttons
+        }
+      },
+    }),
     forgotPassword: build.mutation({ query: (email) => ({ url: 'auth/password/reset/', method: 'POST', body: { email } }) }),
     resetPassword: build.mutation({ query: (body) => ({ url: 'auth/password/reset/confirm/', method: 'POST', body }) }),
     // Other sessions are signed out; this one continues with the fresh tokens returned.
@@ -63,6 +75,8 @@ export const {
   useResendVerificationMutation,
   useLogoutMutation,
   useMeQuery,
+  useDemoQuery,
+  useDemoLoginMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,

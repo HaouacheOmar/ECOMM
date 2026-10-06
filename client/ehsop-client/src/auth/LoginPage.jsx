@@ -1,7 +1,8 @@
+import { Headset, LayoutDashboard, ShoppingBag } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { fieldError, useLoginMutation, useRegisterMutation } from './authApi.js'
+import { fieldError, useDemoLoginMutation, useDemoQuery, useLoginMutation, useRegisterMutation } from './authApi.js'
 import Field from './Field.jsx'
 import { HOME_BY_ROLE } from './authSlice.js'
 
@@ -67,6 +68,37 @@ function RegisterForm({ onBusy, onDone }) {
   )
 }
 
+const DEMO_ROLES = [['CUSTOMER', 'Customer', ShoppingBag], ['EMPLOYEE', 'Employee', Headset], ['ADMIN', 'Admin', LayoutDashboard]]
+
+// Portfolio demo: one click into each workspace (only when the server runs in DEMO_MODE).
+function TryAs({ onBusy, onDone }) {
+  const { data } = useDemoQuery()
+  const [demoLogin, { isLoading, error }] = useDemoLoginMutation()
+  if (!data?.enabled) return null
+
+  const tryAs = async (role) => {
+    onBusy(true)
+    const { data: session } = await demoLogin(role)
+    if (session) onDone(session.user)
+    else onBusy(false)
+  }
+
+  return (
+    <section className="try-as mb-4" aria-labelledby="try-as-title">
+      <h2 id="try-as-title" className="h6 mb-1">Explore the demo</h2>
+      <p className="small text-body-secondary mb-2">No sign-up needed: jump into any workspace.</p>
+      <div className="d-grid gap-2">
+        {DEMO_ROLES.map(([role, label, Icon]) => (
+          <button key={role} type="button" className="btn btn-outline-secondary d-flex align-items-center gap-2" disabled={isLoading} onClick={() => tryAs(role)}>
+            <Icon size={18} aria-hidden /> Try as {label}
+          </button>
+        ))}
+      </div>
+      {error && <div role="alert" className="text-danger small mt-2">{error.data?.detail ?? 'The demo is not available right now.'}</div>}
+    </section>
+  )
+}
+
 export default function LoginPage() {
   const { status, user } = useSelector((state) => state.auth)
   const navigate = useNavigate()
@@ -83,6 +115,7 @@ export default function LoginPage() {
   const tabs = [['login', 'Log in'], ['register', 'Register']]
   return (
     <div className="card mx-auto p-4 p-md-5" style={{ maxWidth: 440 }}>
+      <TryAs onBusy={setLeaving} onDone={onDone} />
       <div role="tablist" aria-label="Account" className="auth-tabs mb-4">
         {tabs.map(([key, label]) => (
           <button key={key} id={`tab-${key}`} type="button" role="tab" aria-selected={tab === key} aria-controls={`panel-${key}`}
