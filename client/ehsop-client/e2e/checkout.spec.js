@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test'
 import { emptyCustomerCart, findProduct, updateProduct } from './api.js'
-import { PASSWORD, USERS, loginAs } from './users.js'
+import { loginAs, PASSWORD, searchCatalog, USERS } from './users.js'
 
 const drawer = (page) => page.getByRole('dialog', { name: 'Your cart' })
 const confirmButton = (page) => page.getByRole('button', { name: 'Confirm order' })
 const stockOf = async (request, name) => (await findProduct(request, name)).stock
 
 async function addToCart(page, name, times = 1) {
-  await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
+  await searchCatalog(page, name)
   for (let i = 0; i < times; i++) {
     await page.getByRole('button', { name: `Add ${name} to cart` }).click()
     await page.getByRole('button', { name: 'Close cart' }).click()

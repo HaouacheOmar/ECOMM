@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { fileURLToPath } from 'node:url'
-import { loginAs } from './users.js'
+import { loginAs, searchCatalog } from './users.js'
 
 const PHOTO = fileURLToPath(new URL('./fixtures/photo.png', import.meta.url))
 
@@ -22,7 +22,7 @@ test('admin creates a product with a photo, then archives and restores it', asyn
   await expect(page.getByText('Primary')).toBeVisible()
 
   // Shown in the storefront with its photo.
-  await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
+  await searchCatalog(page, name)
   const card = page.getByRole('article', { name })
   await expect(card.locator('img')).toHaveAttribute('src', /\/media\/products\//)
   await expect(card).toContainText('4 500 DA')
@@ -33,7 +33,7 @@ test('admin creates a product with a photo, then archives and restores it', asyn
   await page.getByRole('link', { name }).click()
   await page.getByRole('button', { name: 'Archive' }).click()
   await expect(page.getByText('Archived', { exact: true })).toBeVisible()
-  await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
+  await searchCatalog(page, name)
   await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('0 products found')
 
   // Still listed for the Admin, and restorable.
@@ -42,7 +42,7 @@ test('admin creates a product with a photo, then archives and restores it', asyn
   await expect(page.getByRole('row', { name: new RegExp(name) })).toContainText('Archived')
   await page.getByRole('link', { name }).click()
   await page.getByRole('button', { name: 'Restore' }).click()
-  await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
+  await searchCatalog(page, name)
   await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('1 product found')
 })
 

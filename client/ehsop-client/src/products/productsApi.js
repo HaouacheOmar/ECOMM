@@ -9,6 +9,9 @@ export const productsApi = api.injectEndpoints({
       providesTags: ['Product'],
     }),
     product: build.query({ query: (id) => `products/${id}/`, providesTags: (_r, _e, id) => [{ type: 'Product', id }] }),
+    bestsellers: build.query({ query: () => 'bestsellers/', providesTags: ['Product'] }),
+    // Changes when the Customer confirms or cancels an Order.
+    recommendations: build.query({ query: () => 'recommendations/', providesTags: ['Product', 'Order'] }),
     productReviews: build.query({
       query: ({ id, page = 1 }) => ({ url: `products/${id}/reviews/`, params: { page } }),
       providesTags: ['Review'],
@@ -27,6 +30,8 @@ export const {
   useCategoriesQuery,
   useProductsQuery,
   useProductQuery,
+  useBestsellersQuery,
+  useRecommendationsQuery,
   useProductReviewsQuery,
   useMyReviewQuery,
   usePostReviewMutation,

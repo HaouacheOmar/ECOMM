@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test'
 import { emptyCustomerCart, setArchived, updateProduct } from './api.js'
-import { loginAs } from './users.js'
+import { loginAs, searchCatalog } from './users.js'
 
 const cartButton = (page) => page.getByRole('button', { name: /^Cart, / })
 const drawer = (page) => page.getByRole('dialog', { name: 'Your cart' })
 const line = (page, name) => drawer(page).getByRole('listitem').filter({ hasText: name })
 
 async function addFromCatalog(page, name) {
-  await page.goto(`/#/products?search=${encodeURIComponent(name)}`)
+  await searchCatalog(page, name)
   await page.getByRole('button', { name: `Add ${name} to cart` }).click()
   await expect(drawer(page)).toBeVisible()
 }
@@ -49,7 +49,7 @@ test('the same customer cart appears in another browser', async ({ page, browser
 
 test('quantity is capped at stock and a sold-out item blocks checkout', async ({ page, request }) => {
   await loginAs(page, 'customer')
-  await page.goto('/#/products?search=E2E Board')
+  await searchCatalog(page, 'E2E Board')
   await page.getByRole('article', { name: 'E2E Board' }).getByRole('link').click()
   await page.getByLabel('Quantity').fill('3')
   await page.getByRole('button', { name: 'Add E2E Board to cart' }).click()
@@ -83,6 +83,6 @@ test('archived products leave the guest cart', async ({ page, request }) => {
 })
 
 test('out of stock products cannot be added', async ({ page }) => {
-  await page.goto('/#/products?search=E2E Tote')
+  await searchCatalog(page, 'E2E Tote')
   await expect(page.getByRole('article', { name: 'E2E Tote' }).getByRole('button', { name: 'Out of stock' })).toBeDisabled()
 })

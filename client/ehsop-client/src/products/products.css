@@ -142,3 +142,20 @@
 .star-off {
   color: var(--es-muted);
 }
+
+/* Home page shelves: section header from the style reference (20px semibold, chevron) */
+.shelf {
+  margin-top: 64px;
+}
+.shelf-title {
+  font-size: 1.25rem;
+  letter-spacing: -0.04em;
+  margin-bottom: 24px;
+}
+.shelf-title a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--es-text);
+  text-decoration: none;
+}

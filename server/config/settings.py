@@ -9,6 +9,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,6 +121,10 @@ CACHES = {
 CELERY_BROKER_URL = REDIS_URL
 CELERY_TASK_ACKS_LATE = True
 CELERY_TIMEZONE = 'UTC'
+CELERY_BEAT_SCHEDULE = {
+    'precompute-bestsellers': {'task': 'products.tasks.precompute_bestsellers', 'schedule': 15 * 60},
+    'refresh-recommendations': {'task': 'products.tasks.refresh_recommendations', 'schedule': crontab(hour=3, minute=0)},
+}
 
 
 # Password validation

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { searchCatalog } from './users.js'
 
 const cards = (page) => page.locator('.product-grid article')
 const cardNames = (page) => cards(page).locator('h2').allTextContents()
@@ -12,14 +13,14 @@ test('guest searches from the header and results update after typing', async ({ 
 })
 
 test('archived products are never shown', async ({ page }) => {
-  await page.goto('/#/products?search=E2E')
+  await searchCatalog(page, 'E2E')
   await expect(page.getByLabel('Search products')).toHaveValue('E2E')
   await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('3 products found')
   await expect(page.getByText('E2E Archived Lamp')).toHaveCount(0)
 })
 
 test('filter by category and sort by price', async ({ page }) => {
-  await page.goto('/#/products?search=E2E')
+  await searchCatalog(page, 'E2E')
   await page.getByRole('group', { name: 'Categories' }).getByRole('button', { name: 'Kitchen' }).click()
   await expect(page.getByRole('status').filter({ hasText: /found|Loading/ })).toHaveText('2 products found')
 
@@ -32,13 +33,13 @@ test('filter by category and sort by price', async ({ page }) => {
 })
 
 test('out of stock products stay listed and are marked', async ({ page }) => {
-  await page.goto('/#/products?search=E2E Tote')
+  await searchCatalog(page, 'E2E Tote')
   const tote = page.getByRole('article', { name: 'E2E Tote' })
   await expect(tote.getByText('Out of stock')).toBeVisible()
 })
 
 test('product page shows details', async ({ page }) => {
-  await page.goto('/#/products?search=E2E Mug')
+  await searchCatalog(page, 'E2E Mug')
   await page.getByRole('article', { name: 'E2E Mug' }).getByRole('link').click()
   await expect(page.getByRole('heading', { level: 1, name: 'E2E Mug' })).toBeVisible()
   await expect(page.getByText('1 200 DA')).toBeVisible()

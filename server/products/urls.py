@@ -11,4 +11,6 @@ router.register('products', views.ProductViewSet, basename='product')
 urlpatterns = [
     path('products/<uuid:pk>/reviews/', reviews.ProductReviewsView.as_view(), name='product-reviews'),
     path('products/<uuid:pk>/reviews/mine/', reviews.MyReviewView.as_view(), name='product-review-mine'),
+    path('bestsellers/', views.BestsellersView.as_view(), name='bestsellers'),
+    path('recommendations/', views.RecommendationsView.as_view(), name='recommendations'),
 ] + router.urls

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { verificationToken } from './server.js'
-import { USERS } from './users.js'
+import { searchCatalog, USERS } from './users.js'
 
 const newEmail = () => `new-${Date.now()}-${Math.floor(Math.random() * 1e6)}@e2e.test`
 const banner = (page) => page.getByRole('region', { name: 'Email verification' })
@@ -42,7 +42,7 @@ test('registration errors appear next to the fields', async ({ page }) => {
 })
 
 test('a guest cart is kept when registering', async ({ page }) => {
-  await page.goto('/#/products?search=E2E Mug')
+  await searchCatalog(page, 'E2E Mug')
   await page.getByRole('button', { name: 'Add E2E Mug to cart' }).click()
   await page.getByRole('button', { name: 'Close cart' }).click()
 

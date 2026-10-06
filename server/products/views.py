@@ -6,10 +6,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from accounts.permissions import IsAdmin, ReadOnlyOrAdmin, is_admin
+from accounts.permissions import IsAdmin, IsCustomer, ReadOnlyOrAdmin, is_admin
 
+from . import recommendations
 from .models import Category, Product, ProductImage
 from .serializers import (
     CategorySerializer,
@@ -106,3 +109,23 @@ class ProductViewSet(viewsets.ModelViewSet):
             image.is_primary = True
             image.save(update_fields=['is_primary'])
         return Response(ProductDetailSerializer(self.get_object(), context=self.get_serializer_context()).data)
+
+
+class BestsellersView(APIView):
+    """The front page's 8 Bestsellers (most units sold in non-cancelled Orders over 30 days, topped
+    up with the newest Products)."""
+
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(ProductListSerializer(recommendations.bestsellers(), many=True, context={'request': request}).data)
+
+
+class RecommendationsView(APIView):
+    """A Customer's 8 Recommendations (the Bestsellers until they have bought something)."""
+
+    permission_classes = [IsCustomer]
+
+    def get(self, request):
+        return Response(ProductListSerializer(recommendations.recommendations(request.user), many=True, context={'request': request}).data)

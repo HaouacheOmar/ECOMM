@@ -18,3 +18,10 @@ export async function loginAs(page, who) {
   await page.getByRole('button', { name: 'Log in' }).click()
   await expect(page).toHaveURL(HOME[who])
 }
+
+// Opens the catalog search for `term` and waits until its results page is the one showing (the
+// previous page, e.g. the home shelves, animates out first and may list the same Products).
+export async function searchCatalog(page, term) {
+  await page.goto(`/#/products?search=${encodeURIComponent(term)}`)
+  await expect(page.getByRole('heading', { level: 1, name: `Results for “${term}”` })).toBeVisible()
+}

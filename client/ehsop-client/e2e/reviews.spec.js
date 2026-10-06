@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test'
 import { resetReviews } from './server.js'
-import { loginAs } from './users.js'
+import { loginAs, searchCatalog } from './users.js'
 
 const PRODUCT = 'Review Teapot' // out of stock: still reviewable
 
 async function openProduct(page) {
-  await page.goto(`/#/products?search=${encodeURIComponent(PRODUCT)}`)
+  await searchCatalog(page, PRODUCT)
   await page.getByRole('article', { name: PRODUCT }).getByRole('link').click()
   await expect(page.getByRole('heading', { level: 1, name: PRODUCT })).toBeVisible()
 }

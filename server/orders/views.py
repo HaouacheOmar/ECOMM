@@ -9,11 +9,12 @@ from rest_framework.views import APIView
 
 from accounts.permissions import IsCustomer, IsStaff, ReadOnlyOrAdmin, is_admin, is_staff_member
 from products.models import Product
+from products.recommendations import purchases_changed
 from products.serializers import ProductListSerializer
 
+from .live import broadcast
 from .models import Cart, CartItem, Order, OrderItem, PickupPoint
 from .serializers import CheckoutSerializer, OrderSerializer, PickupPointSerializer
-from .live import broadcast
 from .tasks import send_order_confirmation
 
 MAX_LINES = 100
@@ -197,6 +198,8 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
         """Answer with the fresh Order and push the same data to the live feed (after commit)."""
         data = self.get_serializer(self.get_queryset().get(pk=order.pk)).data
         broadcast(event, data, order.customer_id)
+        if event == 'order.created' or data['status'] == Order.Status.CANCELLED:
+            purchases_changed(order.customer_id)
         return Response(data, status=status)
 
     def create(self, request):
