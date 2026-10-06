@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { loginAs } from './users.js'
 
 const theme = (page) => page.locator('html').getAttribute('data-bs-theme')
 
@@ -6,18 +7,19 @@ test('storefront shell renders header with search and account icons', async ({ p
   await page.goto('/#/')
   await expect(page.getByRole('search')).toBeVisible()
   await expect(page.getByRole('link', { name: 'My Orders' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible()
   await expect(page.getByRole('button', { name: /Cart/ })).toBeVisible()
 })
 
 test('employee desk shell renders the three panes', async ({ page }) => {
-  await page.goto('/#/desk')
+  await loginAs(page, 'employee')
   await expect(page.getByRole('region', { name: 'Support Queue and my Customers' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Conversation' })).toBeVisible()
   await expect(page.getByRole('region', { name: "Customer's Orders" })).toBeVisible()
 })
 
 test('admin shell icon rail navigates between sections', async ({ page }) => {
-  await page.goto('/#/admin')
+  await loginAs(page, 'admin')
   const rail = page.getByRole('navigation', { name: 'Admin' })
   await rail.getByRole('link', { name: 'Orders' }).click()
   await expect(page).toHaveURL(/#\/admin\/orders$/)
@@ -50,7 +52,7 @@ test.describe('theme', () => {
 test('route changes still work with reduced motion', async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto('/#/admin')
+  await loginAs(page, 'admin')
   await page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Employees' }).click()
   await expect(page.getByRole('heading', { name: /employees/i })).toBeVisible()
   await context.close()

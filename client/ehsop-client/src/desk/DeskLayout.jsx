@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import LogoutButton from '../auth/LogoutButton.jsx'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
 import './desk.css'
 
@@ -9,7 +10,7 @@ export default function DeskLayout() {
       <header className="desk-header surface">
         <Link to="/desk" className="wordmark">eshop</Link>
         <span className="text-body-secondary ms-2">Support desk</span>
-        <div className="ms-auto"><ThemeToggle /></div>
+        <div className="ms-auto d-flex"><ThemeToggle /><LogoutButton /></div>
       </header>
       <main className="desk-panes">
         <section className="desk-pane surface" aria-label="Support Queue and my Customers">

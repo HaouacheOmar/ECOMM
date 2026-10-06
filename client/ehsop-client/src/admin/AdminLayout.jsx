@@ -1,6 +1,7 @@
 import { Activity, LayoutDashboard, MapPin, Package, ReceiptText, Tags, UserCog, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import AnimatedOutlet from '../AnimatedOutlet.jsx'
+import LogoutButton from '../auth/LogoutButton.jsx'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
 import './admin.css'
 
@@ -29,6 +30,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/account" className="rail-item" aria-label="Account" title="Account">
             <UserCog size={22} aria-hidden />
           </NavLink>
+          <LogoutButton className="rail-item border-0 bg-transparent" />
         </div>
       </nav>
       <main className="admin-main">

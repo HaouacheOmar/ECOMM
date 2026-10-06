@@ -6,7 +6,11 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
 import App from './App.jsx'
+import { authApi } from './auth/authApi.js'
 import { store } from './store.js'
+
+// Restore the session from the refresh cookie once, before anything renders a guarded route.
+store.dispatch(authApi.endpoints.restoreSession.initiate())
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,5 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
+import AccountPage from './auth/AccountPage.jsx'
+import LoginPage from './auth/LoginPage.jsx'
+import RequireRole from './auth/RequireRole.jsx'
 
 const StorefrontLayout = lazy(() => import('./storefront/StorefrontLayout.jsx'))
 const DeskLayout = lazy(() => import('./desk/DeskLayout.jsx'))
@@ -20,13 +23,16 @@ export default function App() {
   return (
     <Suspense fallback={null}>
       <Routes>
-        <Route path="/desk/*" element={<DeskLayout />} />
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/desk/*" element={<RequireRole role="EMPLOYEE"><DeskLayout /></RequireRole>} />
+        <Route path="/admin" element={<RequireRole role="ADMIN"><AdminLayout /></RequireRole>}>
           <Route index element={<Placeholder title="Dashboard" />} />
+          <Route path="account" element={<AccountPage />} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
         <Route path="/" element={<StorefrontLayout />}>
           <Route index element={<Placeholder title="Welcome" />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="account" element={<RequireRole role="CUSTOMER"><AccountPage /></RequireRole>} />
           <Route path=":section" element={<Placeholder />} />
         </Route>
       </Routes>

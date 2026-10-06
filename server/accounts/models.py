@@ -44,3 +44,14 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class EmployeeSession(models.Model):
+    """From an Employee's password login to their explicit logout (null if they never logged out)."""
+
+    employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sessions')
+    login_at = models.DateTimeField(auto_now_add=True)
+    logout_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-login_at']
