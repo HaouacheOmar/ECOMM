@@ -9,6 +9,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
+from chat import presence
+from chat.service import presence_changed, requeue_unanswered
+from config.sockets import close_all_sockets
+
+from .activity import session_changed
 from .models import EmployeeSession, User
 from .permissions import IsAdmin
 
@@ -25,8 +30,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'is_active', 'date_joined', 'password']
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_active', 'is_online', 'date_joined', 'password']
         read_only_fields = ['is_active', 'date_joined']
+
+    is_online = serializers.SerializerMethodField()
+
+    def get_is_online(self, employee):
+        return presence.is_online(employee.pk)
 
     def validate_email(self, email):
         email = User.objects.normalize_email(email).lower()
@@ -54,7 +64,8 @@ class SetPasswordSerializer(serializers.Serializer):
 
 def end_sessions(user):
     """Close the open Employee Session and revoke every refresh token, so no tab can stay signed in."""
-    EmployeeSession.objects.filter(employee=user, logout_at=None).update(logout_at=timezone.now())
+    if EmployeeSession.objects.filter(employee=user, logout_at=None).update(logout_at=timezone.now()):
+        session_changed(user, ended=True)
     for token in OutstandingToken.objects.filter(user=user):
         BlacklistedToken.objects.get_or_create(token=token)
 
@@ -83,14 +94,19 @@ class EmployeeViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets
 
     @action(detail=True, methods=['post'])
     def deactivate(self, request, pk=None):
-        """Locks the Employee out at once: login, refresh and access tokens all fail, and their
-        Customers return to the Support Queue."""
+        """Locks the Employee out at once: login, refresh and access tokens all fail, their open
+        sockets are closed (the desk signs out), and their Customers return to the Support Queue."""
         employee = self.get_object()
         with transaction.atomic():
             employee.is_active = False
             employee.save(update_fields=['is_active'])
+            if presence.force_offline(employee.pk):
+                presence_changed(employee, online=False)  # tells the Admin and re-queues
+            else:
+                requeue_unanswered(employee)
             employee.assigned_customers.update(assigned_employee=None)
             end_sessions(employee)
+        close_all_sockets(employee.pk)
         return Response(EmployeeSerializer(employee).data)
 
     @action(detail=True, methods=['post'])

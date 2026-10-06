@@ -4,6 +4,7 @@ import AnimatedOutlet from '../AnimatedOutlet.jsx'
 import LogoutButton from '../auth/LogoutButton.jsx'
 import useLiveOrders from '../orders/useLiveOrders.js'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
+import useLiveActivity from './useLiveActivity.js'
 import './admin.css'
 
 const NAV = [
@@ -18,6 +19,7 @@ const NAV = [
 
 export default function AdminLayout() {
   useLiveOrders()
+  useLiveActivity()
   return (
     <div className="admin-shell">
       <nav className="icon-rail surface" aria-label="Admin">

@@ -1,6 +1,7 @@
 import { KeyRound, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { detailError, fieldError } from './catalogApi.js'
+import Presence from './Presence.jsx'
 import { useCreateEmployeeMutation, useEmployeesQuery, useSetEmployeeActiveMutation, useSetEmployeePasswordMutation } from './employeesApi.js'
 
 const PAGE_SIZE = 20
@@ -102,6 +103,7 @@ function EmployeeRow({ employee }) {
             {employee.is_active ? 'Active' : 'Deactivated'}
           </span>
         </td>
+        <td>{employee.is_active ? <Presence online={employee.is_online} /> : <span className="small text-body-secondary">—</span>}</td>
         <td className="small">{joined.format(new Date(employee.date_joined))}</td>
         <td className="text-end text-nowrap">
           <button type="button" className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1 me-2"
@@ -116,7 +118,7 @@ function EmployeeRow({ employee }) {
       </tr>
       {(editing || notice) && (
         <tr>
-          <td colSpan={5}>
+          <td colSpan={6}>
             {editing
               ? <PasswordForm employee={employee} onDone={(message) => { setEditing(false); setNotice(message) }} />
               : <p role="status" className="small mb-0">{notice}</p>}
@@ -139,11 +141,11 @@ export default function EmployeesPage() {
       <div className="card p-2 table-responsive">
         <table className="table align-middle mb-0" aria-busy={isFetching}>
           <thead>
-            <tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col">Joined</th><th scope="col"><span className="visually-hidden">Actions</span></th></tr>
+            <tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col">Presence</th><th scope="col">Joined</th><th scope="col"><span className="visually-hidden">Actions</span></th></tr>
           </thead>
           <tbody>
             {data?.results.map((e) => <EmployeeRow key={e.id} employee={e} />)}
-            {data?.count === 0 && <tr><td colSpan={5} className="text-center text-body-secondary py-4">No employees yet.</td></tr>}
+            {data?.count === 0 && <tr><td colSpan={6} className="text-center text-body-secondary py-4">No employees yet.</td></tr>}
           </tbody>
         </table>
       </div>

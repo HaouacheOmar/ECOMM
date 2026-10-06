@@ -1,10 +1,15 @@
+import asyncio
+
 from channels.db import database_sync_to_async
 
 from accounts.models import User
 from config.sockets import AuthenticatedConsumer
 
 from . import presence
-from .service import EMPLOYEES, Refused, message_data, send_message, user_group
+from .service import EMPLOYEES, Refused, message_data, presence_changed, send_message, user_group
+
+# Grace-period checks outlive their (closed) consumer; keep references so they aren't collected.
+_checks = set()
 
 
 class ChatConsumer(AuthenticatedConsumer):
@@ -19,8 +24,8 @@ class ChatConsumer(AuthenticatedConsumer):
         return [user_group(user.pk)] + ([EMPLOYEES] if user.role == User.Role.EMPLOYEE else [])
 
     async def on_authenticated(self):
-        if self.user.role == User.Role.EMPLOYEE:
-            await database_sync_to_async(presence.connected)(self.user.pk, self.channel_name)
+        if self.user.role == User.Role.EMPLOYEE and await database_sync_to_async(presence.connected)(self.user.pk, self.channel_name):
+            await database_sync_to_async(presence_changed)(self.user, online=True)
 
     async def handle(self, content):
         client_id = content.get('client_id')
@@ -37,5 +42,15 @@ class ChatConsumer(AuthenticatedConsumer):
 
     async def disconnect(self, code):
         if self.user is not None and self.user.role == User.Role.EMPLOYEE:
-            await database_sync_to_async(presence.disconnected)(self.user.pk, self.channel_name)
+            if await database_sync_to_async(presence.disconnected)(self.user.pk, self.channel_name):
+                check = asyncio.create_task(offline_after_grace(self.user))
+                _checks.add(check)
+                check.add_done_callback(_checks.discard)
         await super().disconnect(code)
+
+
+async def offline_after_grace(employee):
+    """No connection left: unless they reconnect within the grace period, they go Offline."""
+    await asyncio.sleep(presence.GRACE)
+    if await database_sync_to_async(presence.went_offline_if_idle)(employee.pk):
+        await database_sync_to_async(presence_changed)(employee, online=False)

@@ -12,6 +12,7 @@ from django.core.cache import cache
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
+from accounts.activity import employee_data, notify
 from accounts.models import User
 
 from . import presence
@@ -143,3 +144,24 @@ def from_employee(employee, body, client_id, to):
     if claimed:
         events.append((EMPLOYEES, {'type': 'queue.removed', 'customer': str(customer.pk), 'by': person(employee)}))
     return message, events
+
+
+def presence_changed(employee, online):
+    """Tell the Admin; on going Offline, Customers they left unanswered return to the Support Queue."""
+    notify({'type': 'presence', 'employee': employee_data(employee), 'online': online})
+    if not online:
+        requeue_unanswered(employee)
+
+
+def requeue_unanswered(employee):
+    """Every Customer assigned to this Employee whose latest message is their own (not yet answered)
+    starts waiting in the Support Queue again; any Employee can claim them by replying."""
+    now = timezone.now()
+    events = []
+    for customer in User.objects.filter(assigned_employee=employee, queued_at__isnull=True):
+        last = ChatMessage.objects.filter(customer=customer).only('sender_id').first()  # newest first
+        if last and last.sender_id == customer.pk:
+            User.objects.filter(pk=customer.pk, queued_at__isnull=True).update(queued_at=now)
+            customer.queued_at = now
+            events.append((EMPLOYEES, {'type': 'queue.added', 'customer': customer_data(customer)}))
+    push(events)

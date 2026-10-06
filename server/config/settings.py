@@ -106,6 +106,9 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Seconds an Employee stays Online with no chat connection (covers reloads and token refreshes).
+CHAT_OFFLINE_GRACE = float(env('CHAT_OFFLINE_GRACE', '10'))
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',

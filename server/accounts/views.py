@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .activity import session_changed
 from .models import EmployeeSession, User
 from .tasks import send_verification_email
 from .verification import read_token
@@ -74,6 +75,7 @@ class LoginView(APIView):
         if user.role == User.Role.EMPLOYEE:
             # The session id rides in the refresh token (kept across rotation) so logout closes this session.
             refresh['employee_session'] = EmployeeSession.objects.create(employee=user).pk
+            session_changed(user, ended=False)
         return session_response(user, str(refresh), str(refresh.access_token))
 
 
@@ -113,7 +115,11 @@ class LogoutView(APIView):
                 pass
             else:
                 if session_id := refresh.get('employee_session'):
-                    EmployeeSession.objects.filter(pk=session_id, logout_at=None).update(logout_at=timezone.now())
+                    session = EmployeeSession.objects.select_related('employee').filter(pk=session_id, logout_at=None).first()
+                    if session:
+                        session.logout_at = timezone.now()
+                        session.save(update_fields=['logout_at'])
+                        session_changed(session.employee, ended=True)
                 refresh.blacklist()
         response = Response(status=204)
         response.delete_cookie(REFRESH_COOKIE, path=REFRESH_COOKIE_PATH, samesite='Strict')

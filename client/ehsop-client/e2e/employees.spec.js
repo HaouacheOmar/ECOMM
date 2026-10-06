@@ -49,11 +49,10 @@ test('the admin onboards an employee, resets their password, audits and deactiva
   await page.getByRole('button', { name: 'Save password' }).click()
   await expect(page.getByRole('status').filter({ hasText: 'New password set' })).toBeVisible()
 
-  // Deactivation cuts the open desk off: its session can't be refreshed.
+  // Deactivation cuts the open desk off at once (its sockets are closed and it can't refresh).
   page.once('dialog', (dialog) => dialog.accept())
   await row.getByRole('button', { name: 'Deactivate' }).click()
   await expect(row).toContainText('Deactivated')
-  await desk.reload()
   await expect(desk).toHaveURL(/#\/login$/)
   await deskLogin(desk, email, 'Brand-new-pass-77')
   await expect(desk.getByRole('alert')).toBeVisible()

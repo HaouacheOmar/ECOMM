@@ -30,6 +30,7 @@ export default defineConfig({
       env: {
         // Short access tokens so tests exercise the transparent refresh.
         JWT_ACCESS_SECONDS: '5',
+        CHAT_OFFLINE_GRACE: '2',
         FRONTEND_ORIGIN: `http://localhost:${WEB_PORT}`,
       },
     },

@@ -9,8 +9,10 @@ token expires, and the client refreshes its session and reconnects.
 import asyncio
 import time
 
+from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.layers import get_channel_layer
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -19,6 +21,15 @@ from accounts.models import User
 AUTH_TIMEOUT = 5
 UNAUTHORIZED = 4001
 FORBIDDEN = 4003
+
+
+def personal_group(user_id):
+    """Every socket of a user joins this, so they can all be closed at once (deactivation)."""
+    return f'user.{user_id}'
+
+
+def close_all_sockets(user_id):
+    async_to_sync(get_channel_layer().group_send)(personal_group(user_id), {'type': 'force.close'})
 
 
 @database_sync_to_async
@@ -72,12 +83,16 @@ class AuthenticatedConsumer(AsyncJsonWebsocketConsumer):
         if not self.allowed(user):
             return await self.close(code=FORBIDDEN)
         self.user = user
-        self.joined = self.groups_for(user)
+        self.joined = [personal_group(user.pk), *self.groups_for(user)]
         for group in self.joined:
             await self.channel_layer.group_add(group, self.channel_name)
         self.close_in(max(0, expires - time.time()))
         await self.on_authenticated()
         await self.send_json({'type': 'ready'})
+
+    async def force_close(self, event):
+        # 4001 makes the client try to refresh, which fails for a deactivated user: they are signed out.
+        await self.close(code=UNAUTHORIZED)
 
     async def handle(self, content):
         """Messages after authentication; the orders socket only pushes, so it ignores them."""
