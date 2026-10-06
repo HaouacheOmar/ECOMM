@@ -40,7 +40,7 @@ export default function SearchBar() {
   }
 
   return (
-    <form role="search" className="search-pill flex-grow-1 mx-md-4" onSubmit={(e) => { e.preventDefault(); clearTimeout(timer.current); go(term.trim()) }}>
+    <form role="search" className="search-pill" onSubmit={(e) => { e.preventDefault(); clearTimeout(timer.current); go(term.trim()) }}>
       <label htmlFor="site-search" className="visually-hidden">Search products</label>
       <input id="site-search" type="search" className="form-control" placeholder="What are you shopping for today?" value={term} onChange={onChange} />
       <button type="submit" className="search-submit" aria-label="Search">

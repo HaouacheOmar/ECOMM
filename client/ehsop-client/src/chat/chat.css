@@ -37,8 +37,8 @@
 }
 .chat-message.mine {
   align-self: flex-end;
-  background: var(--es-accent);
-  color: #fff;
+  background: var(--es-text);
+  color: var(--es-surface);
   border-bottom-right-radius: 6px;
 }
 .chat-author {
@@ -130,8 +130,9 @@
   height: 20px;
   padding: 0 6px;
   border-radius: var(--bs-border-radius-pill);
-  background: var(--es-cancelled);
-  color: #fff;
+  background: var(--es-text);
+  color: var(--es-surface);
+  box-shadow: 0 0 0 2px var(--es-surface);
   font-size: 0.75rem;
   line-height: 20px;
 }
@@ -155,14 +156,16 @@
   padding-bottom: 8px;
   border-bottom: 1px solid var(--es-hairline);
 }
-@media (max-width: 575.98px) {
+@media (max-width: 767.98px) {
+  /* above the 64px bottom navigation bar */
   .chat-fab {
     right: 16px;
-    bottom: 16px;
+    bottom: 80px;
   }
   .chat-panel {
     right: 16px;
-    bottom: 84px;
+    bottom: 148px;
+    height: min(540px, calc(100vh - 180px));
   }
 }
 
@@ -195,8 +198,8 @@
   min-width: 22px;
   padding: 0 7px;
   border-radius: var(--bs-border-radius-pill);
-  background: var(--es-accent);
-  color: #fff;
+  background: var(--es-text);
+  color: var(--es-surface);
   font-size: 0.75rem;
   line-height: 22px;
   text-align: center;

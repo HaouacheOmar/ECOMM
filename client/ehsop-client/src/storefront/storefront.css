@@ -1,41 +1,136 @@
-.storefront-header {
+/* Storefront shell: rail | (top search) content footer */
+.shop-topbar {
   position: sticky;
   top: 0;
   z-index: 1020;
-  box-shadow: var(--es-shadow-sm);
+  padding: 16px 0;
+  background: var(--es-canvas);
+}
+.shop-topbar .search-pill {
+  margin-inline: auto;
+}
+.shop-content {
+  flex-grow: 1;
+  padding-top: 24px;
+  padding-bottom: var(--es-section-gap);
 }
 
+/* Search input with violet submit: 9999px white pill, 10%-ink hairline, 4px / 20px padding,
+   48px reserved on the right for the circular violet button and its tinted shadow. */
 .search-pill {
   position: relative;
-  max-width: 560px;
+  max-width: 600px;
+  width: 100%;
 }
 .search-pill .form-control {
-  padding: 0.6rem 3.5rem 0.6rem 1.25rem;
+  height: 56px;
+  padding: 4px 60px 4px 20px;
+  border: 1px solid var(--es-input-border);
+  box-shadow: var(--es-shadow-sm);
 }
 .search-submit {
   position: absolute;
   top: 50%;
   right: 4px;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border: 0;
-  border-radius: var(--bs-border-radius-pill);
+  border-radius: var(--es-radius-pill);
   background: var(--es-accent);
   color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--es-shadow-accent);
+  transition: background-color 0.15s;
 }
 .search-submit:hover {
   background: var(--es-accent-hover);
 }
 
 .verify-banner {
-  background: var(--es-shipped-bg);
-  color: var(--es-shipped);
-  font-size: 0.875rem;
+  background: var(--es-surface);
+  color: var(--es-text);
+  font-size: var(--es-text-md);
+  letter-spacing: var(--es-track-md);
+  box-shadow: var(--es-shadow-sm);
+}
+
+/* Cart count on the rail: ink, not a second accent */
+.cart-count {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--es-radius-pill);
+  background: var(--es-text);
+  color: var(--es-surface);
+  font-size: var(--es-text-caption);
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+/* Footer: the reference's dark band with columnar link groups */
+.shop-footer {
+  background: var(--es-footer-bg);
+  color: var(--es-footer-text);
+  padding: var(--es-section-gap) 0 32px;
+}
+.footer-columns {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, 1fr);
+  gap: 32px;
+}
+.footer-mark {
+  color: var(--es-footer-text);
+}
+.footer-note {
+  margin-top: 12px;
+  max-width: 300px;
+  color: var(--es-footer-muted);
+  font-size: var(--es-text-md);
+  letter-spacing: var(--es-track-md);
+}
+.footer-title {
+  font-size: var(--es-text-md);
+  letter-spacing: var(--es-track-md);
+  margin-bottom: 12px;
+}
+.shop-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  color: var(--es-footer-muted);
+  font-size: var(--es-text-md);
+  letter-spacing: var(--es-track-md);
+}
+.shop-footer a {
+  color: var(--es-footer-muted);
+  text-decoration: none;
+}
+.shop-footer a:hover {
+  color: var(--es-footer-text);
+  text-decoration: underline;
+}
+.footer-legal {
+  margin: 48px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--es-footer-muted);
+  font-size: var(--es-text-sm);
+  letter-spacing: var(--es-track-sm);
+}
+@media (max-width: 767.98px) {
+  .footer-columns {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* Log in / Register tabs */
@@ -43,17 +138,16 @@
   display: flex;
   gap: 4px;
   padding: 4px;
-  border-radius: var(--bs-border-radius-pill);
+  border-radius: var(--es-radius-pill);
   background: var(--es-canvas);
 }
 .auth-tab {
   flex: 1;
   border: 0;
-  border-radius: var(--bs-border-radius-pill);
+  border-radius: var(--es-radius-pill);
   background: transparent;
   color: var(--es-muted);
   padding: 8px 12px;
-  font-weight: 500;
 }
 .auth-tab[aria-selected='true'] {
   background: var(--es-surface);

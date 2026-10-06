@@ -4,7 +4,7 @@ import { useState } from 'react'
 const KEY = 'eshop-theme'
 
 // index.html applies the saved or system theme before first paint; this flips it and remembers the choice.
-export default function ThemeToggle() {
+export default function ThemeToggle({ className = 'icon-btn' }) {
   const [theme, setTheme] = useState(() => document.documentElement.dataset.bsTheme ?? 'light')
   const next = theme === 'dark' ? 'light' : 'dark'
 
@@ -19,8 +19,8 @@ export default function ThemeToggle() {
   }
 
   return (
-    <button type="button" className="icon-btn" onClick={toggle} aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}>
-      {theme === 'dark' ? <Sun size={20} aria-hidden /> : <Moon size={20} aria-hidden />}
+    <button type="button" className={className} onClick={toggle} aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}>
+      {theme === 'dark' ? <Sun size={22} strokeWidth={1.75} aria-hidden /> : <Moon size={22} strokeWidth={1.75} aria-hidden />}
     </button>
   )
 }

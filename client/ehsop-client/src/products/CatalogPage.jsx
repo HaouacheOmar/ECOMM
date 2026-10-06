@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { useSearchParams } from 'react-router-dom'
+import { CategoryPill } from './bits.jsx'
 import ProductCard from './ProductCard.jsx'
 import { useCategoriesQuery, useProductsQuery } from './productsApi.js'
 import './products.css'
@@ -47,11 +48,9 @@ export default function CatalogPage() {
       </div>
 
       <div className="chips mb-4" role="group" aria-label="Categories">
-        <button type="button" className="chip" aria-pressed={!filters.category} onClick={() => update({ category: '' })}>All</button>
+        <button type="button" className="chip chip-plain" aria-pressed={!filters.category} onClick={() => update({ category: '' })}>All</button>
         {categories.map((c) => (
-          <button key={c.id} type="button" className="chip" aria-pressed={filters.category === c.id} onClick={() => update({ category: c.id })}>
-            {c.name}
-          </button>
+          <CategoryPill key={c.id} category={c} pressed={filters.category === c.id} onClick={() => update({ category: c.id })} />
         ))}
       </div>
 

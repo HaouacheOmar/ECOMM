@@ -13,7 +13,7 @@ export default function LogoutButton({ className = 'icon-btn' }) {
 
   return (
     <button type="button" className={className} onClick={onClick} aria-label="Log out" title="Log out">
-      <LogOut size={20} aria-hidden />
+      <LogOut size={className === 'icon-btn' ? 20 : 24} strokeWidth={1.75} aria-hidden />
     </button>
   )
 }

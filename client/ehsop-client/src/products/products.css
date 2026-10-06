@@ -1,13 +1,19 @@
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
+  gap: var(--es-gap);
+}
+@media (min-width: 992px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr); /* the reference's 4-column card grid */
+  }
 }
 
-/* 28px card with an 8px white frame around the 20px-radius image (style reference) */
+/* Brand spotlight card: white, 28px, dual soft shadow; the 1:1 image keeps its own 20px radius,
+   leaving an 8px white frame (card radius = image radius + 8). */
 .product-card {
   position: relative;
-  padding: 8px 8px 16px;
+  padding: 8px 8px 14px;
 }
 .product-card > :not(:first-child),
 .product-card .product-name {
@@ -18,7 +24,7 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: var(--bs-border-radius);
+  border-radius: var(--es-radius-image);
   background: var(--es-canvas);
 }
 .product-img-empty {
@@ -28,21 +34,32 @@
   color: var(--es-muted);
 }
 .product-name {
-  font-size: 0.875rem;
+  font-size: var(--es-text-md);
   font-weight: 600;
+  letter-spacing: var(--es-track-md);
+  line-height: var(--es-leading);
   margin: 12px 0 2px;
 }
 .product-price {
-  font-weight: 500;
+  font-size: var(--es-text-lg);
+  letter-spacing: var(--es-track-lg);
 }
 .rating {
   display: inline-flex;
   align-items: center;
-  font-size: 0.75rem;
+  gap: 1px;
+  font-size: var(--es-text-sm);
+  letter-spacing: var(--es-track-sm);
   color: var(--es-muted);
 }
+/* In tight cards the star row and review count drop to 9px (the reference's only use of 9px). */
+.product-card .rating {
+  font-size: var(--es-text-micro);
+  letter-spacing: var(--es-track-micro);
+  color: var(--es-text);
+}
 .badge-out {
-  font-size: 0.75rem;
+  font-size: var(--es-text-sm);
   padding: 0.125rem 0.625rem;
   border-radius: var(--bs-border-radius-pill);
   background: var(--es-canvas);
@@ -52,20 +69,43 @@
   color: var(--es-online);
 }
 
-/* Category pills */
+/* Category pills: white 9999px chip, faint border, soft lift; a 16px round photo of the Category
+   (its "native colour" comes from the photography), then the 16px label. Padding 6 / 6 / 16. */
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   border: 1px solid var(--es-hairline);
-  border-radius: var(--bs-border-radius-pill);
+  border-radius: var(--es-radius-pill);
   background: var(--es-surface);
   color: var(--es-text);
-  padding: 6px 16px;
+  padding: 6px 16px 6px 6px;
   box-shadow: var(--es-shadow-sm);
-  min-height: 36px;
+  min-height: 36px; /* above WCAG 2.2's 24px target minimum */
+  font-size: var(--es-text-lg);
+  letter-spacing: var(--es-track-lg);
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+.chip:hover {
+  background: var(--es-canvas);
+  color: var(--es-text);
+}
+.chip-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--es-canvas);
+}
+.chip-plain {
+  padding-left: 16px;
 }
 .chip[aria-pressed='true'] {
   background: var(--es-text);
@@ -88,7 +128,7 @@
   overflow: hidden;
 }
 .thumb[aria-pressed='true'] {
-  border-color: var(--es-accent);
+  border-color: var(--es-text);
 }
 .thumb img {
   width: 100%;
@@ -137,19 +177,20 @@
   outline: 2px solid var(--bs-focus-ring-color);
 }
 .star-on {
-  color: var(--es-accent);
+  color: var(--es-text);
 }
 .star-off {
   color: var(--es-muted);
 }
 
-/* Home page shelves: section header from the style reference (20px semibold, chevron) */
+/* Section bands (home): the reference's section header, 20px Semibold at -1px with a 16px chevron,
+   24px above the grid; 64px between sections. */
 .shelf {
-  margin-top: 64px;
+  margin-top: var(--es-section-gap);
 }
 .shelf-title {
-  font-size: 1.25rem;
-  letter-spacing: -0.04em;
+  font-size: var(--es-text-xl);
+  letter-spacing: var(--es-track-xl);
   margin-bottom: 24px;
 }
 .shelf-title a {

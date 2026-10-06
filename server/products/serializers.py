@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from .models import Category, Product, ProductImage
@@ -9,6 +10,23 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'description']
+
+
+class CategoryWithImageSerializer(CategorySerializer):
+    """The category list: each Category with a photo of one of its Products (the pill's icon)."""
+
+    image = serializers.SerializerMethodField()
+
+    class Meta(CategorySerializer.Meta):
+        fields = CategorySerializer.Meta.fields + ['image']
+
+    def get_image(self, category):
+        path = getattr(category, 'image_path', None)  # annotated by the view
+        if not path:
+            return None
+        url = settings.MEDIA_URL + path
+        request = self.context.get('request')
+        return request.build_absolute_uri(url) if request else url
 
 
 class ProductImageSerializer(serializers.ModelSerializer):

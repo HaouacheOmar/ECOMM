@@ -1,7 +1,7 @@
 import uuid
 
 from django.db import transaction
-from django.db.models import ProtectedError
+from django.db.models import OuterRef, ProtectedError, Subquery
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
@@ -16,6 +16,7 @@ from . import recommendations
 from .models import Category, Product, ProductImage
 from .serializers import (
     CategorySerializer,
+    CategoryWithImageSerializer,
     ProductDetailSerializer,
     ProductImageSerializer,
     ProductListSerializer,
@@ -24,8 +25,13 @@ from .serializers import (
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+    # Each Category's best-reviewed product photo, in the same query (the pills' round icons).
+    queryset = Category.objects.annotate(image_path=Subquery(
+        ProductImage.objects.filter(product__category=OuterRef('pk'), product__is_archived=False)
+        .order_by('-product__review_count', '-is_primary', 'id').values('image')[:1]))
+
+    def get_serializer_class(self):
+        return CategoryWithImageSerializer if self.action in ('list', 'retrieve') else CategorySerializer
     permission_classes = [ReadOnlyOrAdmin]
     pagination_class = None
 

@@ -1,0 +1,220 @@
+/* Hero: floating product cards above a centred violet wordmark, the pill search right below,
+   then one centred row of category pills. Generous vertical rhythm. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0 0;
+}
+.constellation {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  height: 300px;
+}
+.hero-card-slot {
+  position: absolute;
+  width: 18%;
+  min-width: 132px;
+  max-width: 184px;
+}
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 6px 10px;
+  color: var(--es-text);
+  text-decoration: none;
+  text-align: left;
+}
+.hero-card:hover {
+  color: var(--es-text);
+}
+.hero-card .product-img {
+  border-radius: 16px;
+}
+.hero-card-name {
+  margin: 8px 6px 2px;
+  font-size: var(--es-text-md);
+  font-weight: 600;
+  letter-spacing: var(--es-track-md);
+  line-height: var(--es-leading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero-card-rating {
+  display: inline-flex;
+  gap: 1px;
+  margin-inline: 6px;
+  color: var(--es-text);
+}
+.hero-wordmark {
+  margin: 8px 0 0;
+  font-size: clamp(56px, 9vw, 104px);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: var(--es-accent);
+}
+.hero-tagline {
+  margin: 12px 0 24px;
+  color: var(--es-muted);
+}
+.hero-chips {
+  justify-content: center;
+  margin-top: 24px;
+  max-width: 900px;
+}
+@media (max-width: 767.98px) {
+  .constellation {
+    height: 200px;
+  }
+  .hero-card-slot:nth-child(n + 4) {
+    display: none; /* three cards on phones */
+  }
+  .hero-card-slot {
+    width: 30%;
+    min-width: 0;
+  }
+  .hero-card-slot:nth-child(1) { left: 2% !important; }
+  .hero-card-slot:nth-child(2) { left: 35% !important; }
+  .hero-card-slot:nth-child(3) { left: 68% !important; }
+}
+
+/* Product rails with the reference's carousel arrow: a 32px white circle with a soft shadow at the
+   right edge, vertically centred. The track scrolls inside itself, snapping card by card. */
+.rail {
+  position: relative;
+}
+.rail-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3 * var(--es-gap)) / 4);
+  gap: var(--es-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 4px 4px 16px;
+  margin: -4px -4px -16px;
+}
+.rail-track::-webkit-scrollbar {
+  display: none;
+}
+.rail-cell {
+  scroll-snap-align: start;
+}
+.rail-arrow {
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--es-surface);
+  color: var(--es-text);
+  box-shadow: var(--es-shadow-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+.rail-arrow-prev {
+  right: auto;
+  left: -16px;
+}
+.rail-arrow:focus-visible {
+  outline: 2px solid var(--bs-focus-ring-color);
+  outline-offset: 2px;
+}
+@media (max-width: 991.98px) {
+  .rail-track {
+    grid-auto-columns: calc((100% - var(--es-gap)) / 2.2);
+  }
+  .rail-arrow { right: -8px; }
+  .rail-arrow-prev { left: -8px; }
+}
+
+/* Shop by category: hero image (60%) beside a 2 x 2 grid of photo tiles */
+.category-band {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--es-gap);
+}
+.category-hero,
+.category-tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--es-radius-card);
+  background: var(--es-slate);
+}
+.category-hero img,
+.category-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease-out;
+}
+.category-hero:hover img,
+.category-tile:hover img {
+  transform: scale(1.03);
+}
+.category-hero {
+  aspect-ratio: 4 / 3;
+}
+/* A flat scrim (no gradient) keeps the white display type legible on any photo. */
+.category-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.22);
+}
+.category-hero-name {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 1;
+  color: #fff;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+.category-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr; /* the tiles share the hero tile's height */
+  gap: var(--es-gap);
+}
+.category-tile {
+  min-height: 0;
+}
+.category-tile-label {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #000;
+  font-size: var(--es-text-md);
+  font-weight: 600;
+  letter-spacing: var(--es-track-md);
+}
+@media (max-width: 767.98px) {
+  .category-band {
+    grid-template-columns: 1fr;
+  }
+  .category-tile {
+    aspect-ratio: 1 / 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .category-hero img,
+  .category-tile img {
+    transition: none;
+  }
+}

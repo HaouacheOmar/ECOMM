@@ -34,7 +34,7 @@ test('the admin onboards an employee, resets their password, audits and deactiva
   const desk = await browser.newPage()
   await deskLogin(desk, email, PASSWORD)
   await expect(desk).toHaveURL(/#\/desk$/)
-  await expect(desk.getByText('Support desk')).toBeVisible()
+  await expect(desk.getByRole('region', { name: 'Support Queue and my Customers' })).toBeVisible()
 
   // Their session shows in the activity log, still open.
   await page.getByRole('navigation', { name: 'Admin' }).getByRole('link', { name: 'Activity log' }).click()

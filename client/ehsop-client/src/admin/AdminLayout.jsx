@@ -1,9 +1,7 @@
-import { Activity, LayoutDashboard, MapPin, Package, ReceiptText, Tags, UserCog, Users } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { Activity, LayoutDashboard, MapPin, Package, ReceiptText, Tags, Users } from 'lucide-react'
 import AnimatedOutlet from '../AnimatedOutlet.jsx'
-import LogoutButton from '../auth/LogoutButton.jsx'
 import useLiveOrders from '../orders/useLiveOrders.js'
-import ThemeToggle from '../theme/ThemeToggle.jsx'
+import IconRail, { RailAvatar, RailLink } from '../shell/Rail.jsx'
 import useLiveActivity from './useLiveActivity.js'
 import './admin.css'
 
@@ -21,23 +19,11 @@ export default function AdminLayout() {
   useLiveOrders()
   useLiveActivity()
   return (
-    <div className="admin-shell">
-      <nav className="icon-rail surface" aria-label="Admin">
-        <span className="wordmark mb-2" aria-hidden>e</span>
-        {NAV.map(({ to, label, Icon, end }) => (
-          <NavLink key={to} to={to} end={end} className="rail-item" aria-label={label} title={label}>
-            <Icon size={22} aria-hidden />
-          </NavLink>
-        ))}
-        <div className="mt-auto d-flex flex-column align-items-center">
-          <ThemeToggle />
-          <NavLink to="/admin/account" className="rail-item" aria-label="Account" title="Account">
-            <UserCog size={22} aria-hidden />
-          </NavLink>
-          <LogoutButton className="rail-item border-0 bg-transparent" />
-        </div>
-      </nav>
-      <main className="admin-main">
+    <div className="app-shell">
+      <IconRail label="Admin" home="/admin" account={<RailAvatar to="/admin/account" />}>
+        {NAV.map((item) => <RailLink key={item.to} {...item} />)}
+      </IconRail>
+      <main className="app-main admin-main">
         <AnimatedOutlet />
       </main>
     </div>

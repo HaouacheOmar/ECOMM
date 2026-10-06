@@ -113,3 +113,20 @@ def test_categories_are_listed_alphabetically(client, kitchen, bags):
 def test_stock_can_never_go_negative(kitchen):
     with pytest.raises(IntegrityError):
         product(kitchen, 'Broken', stock=-1)
+
+
+def test_categories_come_with_a_photo_of_one_of_their_products(settings, tmp_path):
+    settings.MEDIA_ROOT = tmp_path
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from products.models import ProductImage
+
+    kitchen = Category.objects.create(name='Kitchen B')
+    empty = Category.objects.create(name='Empty')
+    mug = Product.objects.create(category=kitchen, name='Mug B', price=Decimal('1200'), stock=3, review_count=4)
+    ProductImage.objects.create(product=mug, is_primary=True, image=SimpleUploadedFile('mug.webp', b'x', content_type='image/webp'))
+
+    listed = {c['name']: c['image'] for c in APIClient().get('/api/categories/').data}
+
+    assert listed['Kitchen B'].startswith('http://testserver/media/products/mug')
+    assert listed['Empty'] is None

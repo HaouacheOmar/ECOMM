@@ -1,23 +1,36 @@
-/* E-Shop design tokens (style reference: docx/SYSTEM_DESIN.md, contrast-checked).
-   Components use these variables or Bootstrap's; never raw hex. */
+/* E-Shop design tokens, taken from the style reference (docx/SYSTEM_DESIN.md).
+   Components use these variables or Bootstrap's; never raw hex. Dark mode is our addition:
+   the same system on a near-black canvas. */
 
 :root,
 [data-bs-theme='light'] {
-  --es-canvas: #f2f4f5;
-  --es-surface: #ffffff;
-  --es-text: #000000;
-  --es-muted: #6b6867;
-  --es-hairline: #ebebeb;
-  --es-accent: #5433eb;
+  /* Colors (reference names in comments) */
+  --es-canvas: #f2f4f5;          /* Canvas Mist: page background */
+  --es-surface: #ffffff;         /* Pure White: cards, inputs, pills, rails */
+  --es-text: #000000;            /* Ink Black */
+  --es-muted: #787574;           /* Muted Gray: secondary text, idle icons */
+  --es-hairline: #ebebeb;        /* Faint Border */
+  --es-stone: #cccccc;           /* Cool Stone: placeholders, disabled */
+  --es-fog: #acb0aa;             /* Warm Fog: secondary tints */
+  --es-slate: #332f2d;           /* Slate Ink: dark product surfaces */
+  --es-input-border: rgba(5, 41, 77, 0.1);
+  --es-accent: #5433eb;          /* Shop Violet: the single accent */
   --es-accent-hover: #4527d6;
   --es-accent-rgb: 84, 51, 235;
-  --es-link: #5433eb;
-  --es-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --es-shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --es-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.12);
-  --es-shadow-accent: 0 4px 24px rgba(69, 36, 219, 0.34);
+  --es-accent-wash: #c0b5f3;     /* Violet Wash: halo behind the violet button */
+  --es-link-rgb: 0, 0, 0;
+  --es-link: #000000;            /* links: ink, underlined */
+  --es-footer-bg: #000000;
+  --es-footer-text: #ffffff;
+  --es-footer-muted: #acb0aa;
 
-  /* Status: text / tinted background */
+  /* Shadows */
+  --es-shadow-sm: rgba(0, 0, 0, 0.06) 0px 2px 8px 0px;                                          /* pills, chips */
+  --es-shadow-card: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;     /* elevated cards */
+  --es-shadow-lg: rgba(0, 0, 0, 0.12) 0px 4px 24px 0px;                                          /* carousel arrows, drawers */
+  --es-shadow-accent: rgba(69, 36, 219, 0.34) 0px 4px 24px 0px;                                  /* the violet submit only */
+
+  /* Status: text / tinted background (with a label, never colour alone) */
   --es-confirmed: #166534;  --es-confirmed-bg: #dcfce7;
   --es-shipped: #3f23c9;    --es-shipped-bg: #e9e5fd;
   --es-delivered: #1e40af;  --es-delivered-bg: #dbeafe;
@@ -32,14 +45,24 @@
   --es-text: #f5f5f4;
   --es-muted: #a8a29e;
   --es-hairline: #2e2c2b;
+  --es-stone: #44403c;
+  --es-fog: #57534e;
+  --es-slate: #0c0a09;
+  --es-input-border: rgba(255, 255, 255, 0.12);
   --es-accent: #6d50f0;
   --es-accent-hover: #7f66f3;
   --es-accent-rgb: 109, 80, 240;
-  --es-link: #a594ff;
-  --es-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --es-shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
-  --es-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.6);
-  --es-shadow-accent: 0 4px 24px rgba(109, 80, 240, 0.45);
+  --es-accent-wash: #3b2f80;
+  --es-link-rgb: 245, 245, 244;
+  --es-link: #f5f5f4;
+  --es-footer-bg: #000000;
+  --es-footer-text: #f5f5f4;
+  --es-footer-muted: #a8a29e;
+
+  --es-shadow-sm: rgba(0, 0, 0, 0.4) 0px 2px 8px 0px;
+  --es-shadow-card: rgba(0, 0, 0, 0.5) 0px 4px 6px -1px, rgba(0, 0, 0, 0.5) 0px 2px 4px -2px;
+  --es-shadow-lg: rgba(0, 0, 0, 0.6) 0px 4px 24px 0px;
+  --es-shadow-accent: rgba(109, 80, 240, 0.45) 0px 4px 24px 0px;
 
   --es-confirmed: #86efac;  --es-confirmed-bg: #14321f;
   --es-shipped: #c4b5fd;    --es-shipped-bg: #2a1f5c;
@@ -47,6 +70,26 @@
   --es-cancelled: #fca5a5;  --es-cancelled-bg: #3b1515;
   --es-online: #4ade80;
   --es-offline: #f87171;
+}
+
+/* Type, spacing and shape (same in both themes) */
+:root {
+  /* Type scale: size / tracking (the reference shapes text with tracking, not weight) */
+  --es-text-micro: 9px;    --es-track-micro: -0.058em;   /* review counts in tight cards only */
+  --es-text-caption: 11px;
+  --es-text-sm: 12px;      --es-track-sm: -0.017em;      /* meta: the floor for labels */
+  --es-text-md: 14px;      --es-track-md: -0.014em;
+  --es-text-lg: 16px;      --es-track-lg: -0.031em;      /* body, buttons, labels */
+  --es-text-xl: 20px;      --es-track-xl: -0.05em;       /* headings */
+  --es-leading: 1.33;
+  /* Layout */
+  --es-page-max: 1200px;
+  --es-section-gap: 64px;
+  --es-gap: 12px;
+  --es-rail: 64px;
+  --es-radius-card: 28px;
+  --es-radius-image: 20px;
+  --es-radius-pill: 9999px;
 }
 
 /* Map tokens onto Bootstrap (same selectors, loaded after bootstrap.css, so these win). */
@@ -62,31 +105,74 @@
   --bs-primary: var(--es-accent);
   --bs-primary-rgb: var(--es-accent-rgb);
   --bs-link-color: var(--es-link);
-  --bs-link-color-rgb: var(--es-accent-rgb);
-  --bs-link-hover-color: var(--es-accent-hover);
+  --bs-link-color-rgb: var(--es-link-rgb);
+  --bs-link-hover-color: var(--es-muted);
   --bs-focus-ring-color: rgba(var(--es-accent-rgb), 0.4);
+  /* GT Standard is the reference face; Inter is its named substitute. */
   --bs-body-font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --bs-body-font-size: 1rem;
-  --bs-body-line-height: 1.5;
-  --bs-border-radius: 20px;
-  --bs-border-radius-lg: 28px;
-  --bs-border-radius-pill: 9999px;
+  --bs-body-font-size: var(--es-text-lg);
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: 1.375;
+  --bs-border-radius: var(--es-radius-image);
+  --bs-border-radius-lg: var(--es-radius-card);
+  --bs-border-radius-pill: var(--es-radius-pill);
 }
 
 body {
-  letter-spacing: -0.011em;
+  letter-spacing: var(--es-track-lg);
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6, b, strong {
+/* Headings: 20px Semibold pulled tight; 14px subheadings Semibold; never bold (700). */
+h1, h2, h3, .h1, .h2, .h3 {
+  font-size: var(--es-text-xl);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--es-track-xl);
+  line-height: 1.1;
+}
+h4, h5, .h4, .h5 {
+  font-size: var(--es-text-lg);
+  font-weight: 600;
+  letter-spacing: var(--es-track-lg);
+}
+h6, .h6 {
+  font-size: var(--es-text-md);
+  font-weight: 600;
+  letter-spacing: var(--es-track-md);
+}
+b, strong, .fw-semibold, .fw-bold {
+  font-weight: 600 !important;
+}
+small, .small {
+  font-size: var(--es-text-md);
+  letter-spacing: var(--es-track-md);
+}
+.text-meta {
+  font-size: var(--es-text-sm);
+  font-weight: 500;
+  letter-spacing: var(--es-track-sm);
+}
+.container-xl {
+  max-width: calc(var(--es-page-max) + 1.5rem); /* 1200px of content plus the gutters */
 }
 
-/* Pills: buttons, inputs, selects */
+/* Buttons: 9999px pills, 16px Regular */
 .btn {
-  --bs-btn-border-radius: var(--bs-border-radius-pill);
-  --bs-btn-font-weight: 500;
+  --bs-btn-border-radius: var(--es-radius-pill);
+  --bs-btn-font-weight: 400;
+  --bs-btn-padding-x: 20px;
+  --bs-btn-padding-y: 8px;
+  letter-spacing: var(--es-track-lg);
+}
+.btn-sm {
+  --bs-btn-padding-x: 14px;
+  --bs-btn-padding-y: 5px;
+  --bs-btn-font-size: var(--es-text-md);
+}
+.btn-lg {
+  --bs-btn-padding-x: 28px;
+  --bs-btn-padding-y: 12px;
+  --bs-btn-font-size: var(--es-text-lg);
 }
 .btn-primary {
   --bs-btn-bg: var(--es-accent);
@@ -95,37 +181,98 @@ h1, h2, h3, h4, h5, h6, b, strong {
   --bs-btn-hover-border-color: var(--es-accent-hover);
   --bs-btn-active-bg: var(--es-accent-hover);
   --bs-btn-active-border-color: var(--es-accent-hover);
-  --bs-btn-disabled-bg: var(--es-accent);
-  --bs-btn-disabled-border-color: var(--es-accent);
+  --bs-btn-disabled-bg: var(--es-stone);
+  --bs-btn-disabled-border-color: var(--es-stone);
+  --bs-btn-disabled-color: var(--es-surface);
+  --bs-btn-disabled-opacity: 1;
   --bs-btn-color: #fff;
   --bs-btn-hover-color: #fff;
   --bs-btn-active-color: #fff;
 }
-.form-control,
-.form-select {
-  border-radius: var(--bs-border-radius-pill);
-  background-color: var(--es-surface);
+/* Secondary actions: the reference's white pill with a faint border and a soft lift. */
+.btn-outline-secondary {
+  --bs-btn-bg: var(--es-surface);
+  --bs-btn-color: var(--es-text);
+  --bs-btn-border-color: var(--es-hairline);
+  --bs-btn-hover-bg: var(--es-canvas);
+  --bs-btn-hover-color: var(--es-text);
+  --bs-btn-hover-border-color: var(--es-hairline);
+  --bs-btn-active-bg: var(--es-canvas);
+  --bs-btn-active-color: var(--es-text);
+  --bs-btn-active-border-color: var(--es-hairline);
+  --bs-btn-disabled-color: var(--es-muted);
+  --bs-btn-disabled-bg: var(--es-surface);
+  --bs-btn-disabled-border-color: var(--es-hairline);
+  box-shadow: var(--es-shadow-sm);
 }
-textarea.form-control {
-  border-radius: var(--bs-border-radius);
+.btn-outline-danger {
+  --bs-btn-bg: var(--es-surface);
+  --bs-btn-color: var(--es-cancelled);
+  --bs-btn-border-color: var(--es-hairline);
+  --bs-btn-hover-bg: var(--es-cancelled-bg);
+  --bs-btn-hover-color: var(--es-cancelled);
+  --bs-btn-hover-border-color: var(--es-hairline);
+  --bs-btn-active-bg: var(--es-cancelled-bg);
+  --bs-btn-active-color: var(--es-cancelled);
+  box-shadow: var(--es-shadow-sm);
 }
 
-/* Cards float on the canvas: shadow, no border */
+/* Inputs: white 9999px pills with a 10%-ink hairline */
+.form-control,
+.form-select {
+  border: 1px solid var(--es-input-border);
+  border-radius: var(--es-radius-pill);
+  background-color: var(--es-surface);
+  padding: 10px 20px;
+  font-size: var(--es-text-lg);
+  letter-spacing: var(--es-track-lg);
+}
+.form-control::placeholder {
+  color: var(--es-muted);
+}
+.form-control-sm {
+  padding: 6px 14px;
+  font-size: var(--es-text-md);
+}
+textarea.form-control {
+  border-radius: var(--es-radius-image);
+}
+.form-label {
+  font-size: var(--es-text-md);
+  letter-spacing: var(--es-track-md);
+  margin-bottom: 6px;
+}
+
+/* Cards: white, 28px, lifted by the dual soft shadow alone (no borders) */
 .card {
   --bs-card-bg: var(--es-surface);
   --bs-card-border-width: 0;
-  --bs-card-border-radius: var(--bs-border-radius-lg);
-  --bs-card-inner-border-radius: var(--bs-border-radius-lg);
+  --bs-card-border-radius: var(--es-radius-card);
+  --bs-card-inner-border-radius: var(--es-radius-card);
   box-shadow: var(--es-shadow-card);
+}
+
+/* Tables sit on cards: hairline rows, muted 14px headers */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: var(--es-canvas);
+  --bs-table-border-color: var(--es-hairline);
+}
+.table > thead th {
+  font-size: var(--es-text-md);
+  font-weight: 500;
+  color: var(--es-muted);
 }
 
 /* Order status badges and presence (colour + text, never colour alone) */
 .status-badge {
   display: inline-block;
-  padding: 0.125rem 0.625rem;
-  border-radius: var(--bs-border-radius-pill);
-  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: var(--es-radius-pill);
+  font-size: var(--es-text-sm);
   font-weight: 500;
+  letter-spacing: var(--es-track-sm);
+  white-space: nowrap;
 }
 .status-confirmed { color: var(--es-confirmed); background: var(--es-confirmed-bg); }
 .status-shipped   { color: var(--es-shipped);   background: var(--es-shipped-bg); }
@@ -134,7 +281,7 @@ textarea.form-control {
 .presence-online  { color: var(--es-online); }
 .presence-offline { color: var(--es-offline); }
 
-/* Layout helpers shared by the workspace shells */
+/* Shared shell pieces */
 .surface {
   background: var(--es-surface);
 }
@@ -145,7 +292,7 @@ textarea.form-control {
   width: 44px;
   height: 44px;
   border: 0;
-  border-radius: var(--bs-border-radius-pill);
+  border-radius: var(--es-radius-pill);
   background: transparent;
   color: var(--es-text);
 }
@@ -154,12 +301,121 @@ textarea.form-control {
 }
 .wordmark {
   font-weight: 600;
-  font-size: 1.25rem;
-  letter-spacing: -0.05em;
+  font-size: var(--es-text-xl);
+  letter-spacing: var(--es-track-xl);
   color: var(--es-text);
   text-decoration: none;
 }
 .wordmark::after {
   content: '.';
   color: var(--es-accent);
+}
+
+/* The 64px icon rail (storefront, desk and Admin): 24px ink icons in 48px targets; the active one
+   sits on the canvas tint at 20px radius. On phones it becomes a bottom bar. */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+.icon-rail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: var(--es-rail);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 0;
+  background: var(--es-surface);
+  z-index: 1030;
+}
+.rail-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  font-size: 24px;
+}
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.rail-end {
+  margin-top: auto;
+}
+.rail-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: var(--es-radius-image);
+  background: transparent;
+  color: var(--es-text);
+  text-decoration: none;
+}
+.rail-item:hover,
+.rail-item.active {
+  background: var(--es-canvas);
+  color: var(--es-text);
+}
+.rail-item:focus-visible {
+  outline: 2px solid var(--bs-focus-ring-color);
+  outline-offset: 2px;
+}
+/* Profile avatar: a 32px circle with a 1px faint ring */
+.rail-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--es-hairline);
+  background: var(--es-canvas);
+  font-size: var(--es-text-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+.app-main {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 767.98px) {
+  .app-shell {
+    flex-direction: column;
+    padding-bottom: 64px;
+  }
+  .icon-rail {
+    position: fixed;
+    inset: auto 0 0 0;
+    top: auto;
+    width: 100%;
+    height: 64px;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 8px;
+    box-shadow: var(--es-shadow-lg);
+    overflow-x: auto; /* the Admin's longer rail scrolls inside the bar, never the page */
+  }
+  .rail-mark {
+    display: none;
+  }
+  .rail-group {
+    flex-direction: row;
+  }
+  .rail-end {
+    margin-top: 0;
+  }
 }

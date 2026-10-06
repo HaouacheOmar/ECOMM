@@ -18,15 +18,15 @@
   transition: border-color 0.15s, background-color 0.15s;
 }
 .method-option:has(input:checked) {
-  border-color: var(--es-accent);
-  background: rgba(var(--es-accent-rgb), 0.06);
+  border-color: var(--es-text);
+  background: var(--es-canvas);
 }
 .method-option:has(input:focus-visible) {
   outline: 2px solid var(--bs-focus-ring-color);
   outline-offset: 2px;
 }
 .method-option input {
-  accent-color: var(--es-accent);
+  accent-color: var(--es-text);
 }
 .checkout-totals {
   display: grid;

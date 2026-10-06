@@ -27,7 +27,7 @@ test('a customer resets a forgotten password, which signs out their other sessio
 
   // The request answers the same for any email.
   await page.goto('/#/login')
-  await page.getByRole('link', { name: 'Forgot your password?' }).click()
+  await page.getByRole('main').getByRole('link', { name: 'Forgot your password?' }).click()
   await expect(page.getByRole('heading', { name: 'Reset your password' })).toBeVisible()
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Send reset link' }).click()

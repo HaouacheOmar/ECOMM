@@ -3,12 +3,14 @@ import { loginAs } from './users.js'
 
 const theme = (page) => page.locator('html').getAttribute('data-bs-theme')
 
-test('storefront shell renders header with search and account icons', async ({ page }) => {
+test('storefront shell renders the search and the icon rail', async ({ page }) => {
   await page.goto('/#/')
   await expect(page.getByRole('search')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'My Orders' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Cart/ })).toBeVisible()
+  const rail = page.getByRole('navigation', { name: 'Shop' })
+  await expect(rail.getByRole('link', { name: 'My Orders' })).toBeVisible()
+  await expect(rail.getByRole('link', { name: 'Log in' })).toBeVisible()
+  await expect(rail.getByRole('button', { name: /Cart/ })).toBeVisible()
+  await expect(page.getByRole('contentinfo')).toContainText('Cash on delivery')
 })
 
 test('employee desk shell renders the three panes', async ({ page }) => {
