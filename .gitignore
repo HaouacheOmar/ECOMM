@@ -12,3 +12,5 @@ docx/
 server/media/
 .claude/
 .playwright-mcp/
+brag-output/
+
