@@ -13,4 +13,4 @@ server/media/
 .claude/
 .playwright-mcp/
 brag-output/
-
+server/staticfiles/

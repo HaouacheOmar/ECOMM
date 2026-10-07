@@ -61,6 +61,20 @@ Your own Admin: `docker compose exec backend python manage.py createsuperuser`.
 
 Product photos are from [Unsplash](https://unsplash.com) (see [server/demo/photos/CREDITS.md](server/demo/photos/CREDITS.md)).
 
+## Deploy (free, no credit card)
+
+The client is on **Vercel**, the API on **Render** (free web service plus free Key Value for Redis), and the database and product photos on **Supabase**. Vercel proxies `/api/` to Render, so the refresh cookie stays first-party. WebSockets connect to Render directly. With no Celery worker, tasks run inline and the Beat schedule (simulated demo activity) is off.
+
+1. **Supabase**: create a project.
+   - In Project Settings → Database, note the **Session pooler** host, user (`postgres.<ref>`) and password.
+   - In Storage, create a **public** bucket called `media`.
+   - In Storage → S3, create an access key and note the endpoint and region.
+2. **Render**: New → Blueprint → this repo. Render reads [render.yaml](render.yaml) and asks for the Supabase values plus `FRONTEND_ORIGIN`. On first start it migrates and seeds the demo shop.
+3. **Vercel**: import the repo with Root Directory `client/ehsop-client`. [vercel.json](client/ehsop-client/vercel.json) and [.env.production](client/ehsop-client/.env.production) point at `eshop-api.onrender.com`; change both if Render gives the service another URL.
+4. Set `FRONTEND_ORIGIN` on Render to the Vercel URL. WebSockets only accept that origin.
+
+The free Render service sleeps after 15 minutes idle, so the first visit after that takes about a minute.
+
 ## Tests
 
 ```sh

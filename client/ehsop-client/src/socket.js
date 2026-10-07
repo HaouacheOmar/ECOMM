@@ -1,6 +1,7 @@
 import { API_URL } from './api.js'
 
-const WS_BASE = API_URL.replace(/^http/, 'ws').replace(/\/api\/?$/, '')
+// Hosted, the API is proxied under the site's own /api/ but sockets go straight to the server.
+const WS_BASE = import.meta.env.VITE_WS_URL ?? API_URL.replace(/^http/, 'ws').replace(/\/api\/?$/, '')
 const UNAUTHORIZED = 4001
 
 /**

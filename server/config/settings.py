@@ -23,6 +23,8 @@ def env(name, default):
 SECRET_KEY = env('DJANGO_SECRET_KEY', 'django-insecure-f_iqche^9=f-9nr$651#hjao62q@l+e1&1g^#93qd19+f_ehpp')
 DEBUG = env('DJANGO_DEBUG', '1') == '1'
 ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # TLS ends at the host's proxy
 
 FRONTEND_ORIGIN = env('FRONTEND_ORIGIN', 'http://localhost:5173')
 PASSWORD_RESET_TIMEOUT = 3600  # reset links last 1 hour (and work once)
@@ -53,6 +55,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,6 +97,7 @@ DATABASES = {
         'PASSWORD': env('DB_PASSWORD', 'eshop'),
         'HOST': env('DB_HOST', 'localhost'),
         'PORT': env('DB_PORT', '5433'),
+        'OPTIONS': {'sslmode': env('DB_SSLMODE', 'prefer')},  # 'require' for Supabase
     }
 }
 
@@ -121,6 +125,9 @@ CACHES = {
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_TASK_ACKS_LATE = True
+# Hosting without a worker (Render free): tasks run inline and Beat's schedule doesn't run.
+if env('CELERY_EAGER', '0') == '1':
+    CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULE = {
     'precompute-bestsellers': {'task': 'products.tasks.precompute_bestsellers', 'schedule': 15 * 60},
@@ -182,8 +189,32 @@ USE_TZ = True
 # Static and media files
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # collectstatic, served by WhiteNoise
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Hosted: uploads go to a public Supabase Storage bucket (S3 API), since the host's disk is wiped
+# on every restart. Unset locally, so media stays in MEDIA_ROOT.
+S3_BUCKET = env('S3_BUCKET', '')
+if S3_BUCKET:
+    S3_PUBLIC_URL = env('S3_PUBLIC_URL', '')  # https://<ref>.supabase.co/storage/v1/object/public/<bucket>
+    MEDIA_URL = S3_PUBLIC_URL + '/'
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3.S3Storage',
+            'OPTIONS': {
+                'bucket_name': S3_BUCKET,
+                'endpoint_url': env('S3_ENDPOINT', ''),  # https://<ref>.supabase.co/storage/v1/s3
+                'region_name': env('S3_REGION', ''),
+                'access_key': env('S3_ACCESS_KEY', ''),
+                'secret_key': env('S3_SECRET_KEY', ''),
+                'addressing_style': 'path',
+                'querystring_auth': False,
+                'custom_domain': S3_PUBLIC_URL.removeprefix('https://'),
+            },
+        },
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

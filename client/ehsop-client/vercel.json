@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://eshop-api.onrender.com/api/$1" }
+  ]
+}
