@@ -6,7 +6,25 @@ A full-stack shop for home and lifestyle goods, priced in Algerian dinar (DA), w
 - **Support desk** (Employees): the Support Queue and their Customers, the live conversation, that Customer's Orders, and the full Orders list. Employees ship, deliver or cancel Orders.
 - **Admin**: a live dashboard (Order feed, which Employees are Online, recent activity), Orders, Products and photos, Categories, Pickup Points, Employees and their activity log.
 
-Built with Django, Django REST Framework and Channels (WebSockets), Celery and Redis, and PostgreSQL. The frontend is React 19 with Vite, Redux Toolkit / RTK Query, React-Bootstrap themed for light and dark, and Motion.
+## Highlights
+
+- **Real time over WebSockets**: new Orders land on the Admin dashboard without a refresh, a Customer's My Orders updates the moment an Employee ships or cancels, and the desk shows which Employees are Online.
+- **Support chat with a shared queue**: a Customer's first message joins the Support Queue, the first Employee to reply takes it, and the Customer stays with that Employee. If the Employee goes offline with messages still unanswered, the Customer goes back to the queue.
+- **Accounts**: email login with JWT (5-minute access tokens, rotating refresh tokens, blacklist on logout), email verification, password reset and change, and three roles routed to their own workspace.
+- **Background jobs**: Celery sends the emails (with retries), recomputes Bestsellers every 15 minutes and refreshes each Customer's Recommendations nightly.
+- **Design system**: one set of tokens drives light and dark themes across all three workspaces; route transitions and card motion use Motion.
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Backend | Python 3.12, Django 6, Django REST Framework, SimpleJWT, drf-spectacular (OpenAPI docs) |
+| Real time | Django Channels, Daphne (ASGI), Redis channel layer; sockets `ws/orders/`, `ws/chat/`, `ws/activity/` |
+| Jobs | Celery worker and Celery Beat on Redis |
+| Data | PostgreSQL; Redis also serves as the cache |
+| Frontend | React 19, Vite, Redux Toolkit and RTK Query, React Router (HashRouter), React-Bootstrap themed with CSS variables, Motion, lucide-react |
+| Testing | pytest, pytest-django, pytest-asyncio (REST and WebSocket tests), Playwright end-to-end |
+| Tooling | Docker Compose for the whole stack, GitHub Actions CI, oxlint |
 
 ## Run it locally
 
