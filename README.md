@@ -1,5 +1,9 @@
 # E-Shop
 
+[![Watch the 40-second showcase](showcase/eshop.jpg)](showcase/eshop.mp4)
+
+*Click the image to watch the 40-second showcase video.*
+
 A full-stack shop for home and lifestyle goods, priced in Algerian dinar (DA), with three workspaces:
 
 - **Storefront** (Customers and Guests): catalog with search and Categories, Cart drawer, checkout with cash on delivery to a home address or a Pickup Point, My Orders updating live, Reviews, Bestsellers and personal Recommendations, and a support chat bubble.
