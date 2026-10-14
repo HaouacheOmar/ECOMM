@@ -37,6 +37,12 @@
   --es-cancelled: #991b1b;  --es-cancelled-bg: #fee2e2;
   --es-online: #15803d;
   --es-offline: #b91c1c;
+
+  /* Charts (Statistics): validated as a set for colour-blind separation on this surface.
+     Profit's light-mode aqua is under 3:1, so charts always ship a legend and a table view. */
+  --es-chart-revenue: #5433eb;
+  --es-chart-spent: #eb6834;
+  --es-chart-profit: #1baf7a;
 }
 
 [data-bs-theme='dark'] {
@@ -70,6 +76,10 @@
   --es-cancelled: #fca5a5;  --es-cancelled-bg: #3b1515;
   --es-online: #4ade80;
   --es-offline: #f87171;
+
+  --es-chart-revenue: #9085e9;
+  --es-chart-spent: #d95926;
+  --es-chart-profit: #199e70;
 }
 
 /* Type, spacing and shape (same in both themes) */

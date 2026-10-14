@@ -6,6 +6,8 @@ import { orderNumber, placedOn, useOrdersQuery } from '../orders/ordersApi.js'
 import { formatPrice } from '../products/formatPrice.js'
 import { useEmployeeSessionsQuery, useEmployeesQuery } from './employeesApi.js'
 import Presence from './Presence.jsx'
+import StatTile from './StatTile.jsx'
+import { change, formatMonth, useLowStockQuery, useStatsMonthQuery } from './statsApi.js'
 
 const FEED_SIZE = 10
 const at = new Intl.DateTimeFormat('en-GB', { dateStyle: 'short', timeStyle: 'short' })
@@ -57,6 +59,30 @@ function RecentActivity() {
   )
 }
 
+// This month's money and what needs restocking, each leading to Statistics.
+function MonthCards() {
+  const { data } = useStatsMonthQuery()
+  const { data: low } = useLowStockQuery()
+  if (!data || !low) return null
+  const { current, previous } = data
+  const more = <Link to="statistics" className="small stretched-link mt-2">Statistics</Link>
+  return (
+    <div className="row g-3 mb-3" aria-label="This month">
+      <div className="col-sm-4">
+        <StatTile label="Revenue this month" value={formatPrice(current.revenue)} delta={change(current.revenue, previous.revenue)}
+          previousLabel={formatMonth(previous.month)} to={more} />
+      </div>
+      <div className="col-sm-4">
+        <StatTile label="Gross profit this month" value={formatPrice(current.gross_profit)} delta={change(current.gross_profit, previous.gross_profit)}
+          previousLabel={formatMonth(previous.month)} flag={current.profit_incomplete ? 'Incomplete' : null} to={more} />
+      </div>
+      <div className="col-sm-4">
+        <StatTile label="Low stock" value={low.length} help={low.length ? 'At or below their reorder level' : 'Everything is above its reorder level'} to={more} />
+      </div>
+    </div>
+  )
+}
+
 // The Admin's at-a-glance view. The Order feed is the first page of Orders, kept live by the
 // orders socket: new Orders slide in at the top, status changes update in place.
 export default function DashboardPage() {
@@ -67,6 +93,7 @@ export default function DashboardPage() {
   return (
     <section style={{ maxWidth: 1200 }}>
       <h1 className="h3 mb-3">Dashboard</h1>
+      <MonthCards />
       <div className="row g-3 align-items-start">
         <section className="col-lg-8" aria-labelledby="feed-title">
           <div className="card p-3">
