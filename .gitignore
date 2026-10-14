@@ -14,3 +14,4 @@ server/media/
 .playwright-mcp/
 brag-output/
 server/staticfiles/
+PRD.md
