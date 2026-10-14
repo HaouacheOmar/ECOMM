@@ -55,7 +55,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        products = Product.objects.select_related('category').prefetch_related('images')
+        products = Product.objects.select_related('category', 'usual_supplier').prefetch_related('images')
         # The Admin sees archived Products when asking for them (management list) or opening one directly.
         if not (is_admin(self.request.user) and (self.action != 'list' or self.request.query_params.get('include_archived'))):
             products = products.filter(is_archived=False)

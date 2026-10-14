@@ -12,10 +12,11 @@ import {
   useUpdateProductMutation,
   useUploadImageMutation,
 } from './catalogApi.js'
+import { useSuppliersQuery } from './suppliersApi.js'
 
-const EMPTY = { name: '', description: '', price: '', cost_price: '', stock: '0', category: '' }
+const EMPTY = { name: '', description: '', price: '', cost_price: '', stock: '0', category: '', usual_supplier: '' }
 
-function Field({ id, label, error, children }) {
+export function Field({ id, label, error, children }) {
   return (
     <div className="mb-3">
       <label htmlFor={id} className="form-label">{label}</label>
@@ -28,10 +29,15 @@ function Field({ id, label, error, children }) {
 function ProductForm({ product }) {
   const navigate = useNavigate()
   const { data: categories = [] } = useCategoriesQuery()
+  // Active Suppliers, plus the current one if it has been archived since.
+  // ponytail: first page only (20); paginate or search if the list grows.
+  const { data: suppliers } = useSuppliersQuery()
+  const current = product?.usual_supplier
+  const supplierOptions = [...(suppliers?.results ?? []), ...(current?.is_archived ? [current] : [])]
   const [create, created] = useCreateProductMutation()
   const [update, updated] = useUpdateProductMutation()
   const [form, setForm] = useState(product
-    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', stock: String(product.stock), category: product.category.id }
+    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', stock: String(product.stock), category: product.category.id, usual_supplier: product.usual_supplier?.id ?? '' }
     : EMPTY)
   const [saved, setSaved] = useState(false)
   const result = product ? updated : created
@@ -46,10 +52,10 @@ function ProductForm({ product }) {
     e.preventDefault()
     if (product) {
       // A Product with Cost missing keeps it missing until a Cost price is typed.
-      const changes = form.cost_price === '' ? { ...form, cost_price: undefined } : form
+      const changes = { ...form, usual_supplier: form.usual_supplier || null, ...(form.cost_price === '' && { cost_price: undefined }) }
       if ((await update({ id: product.id, ...changes })).data) setSaved(true)
     } else {
-      const { data } = await create(form)
+      const { data } = await create({ ...form, usual_supplier: form.usual_supplier || null })
       if (data) navigate(`/admin/products/${data.id}`, { replace: true })
     }
   }
@@ -78,6 +84,12 @@ function ProductForm({ product }) {
         <select id="p-category" name="category" className={`form-select${fieldError(error, 'category') ? ' is-invalid' : ''}`} value={form.category} onChange={onChange}>
           <option value="">Choose a category</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </Field>
+      <Field id="p-usual_supplier" label="Usual supplier (optional)" error={fieldError(error, 'usual_supplier')}>
+        <select id="p-usual_supplier" name="usual_supplier" className={`form-select${fieldError(error, 'usual_supplier') ? ' is-invalid' : ''}`} value={form.usual_supplier} onChange={onChange}>
+          <option value="">None</option>
+          {supplierOptions.map((s) => <option key={s.id} value={s.id}>{s.name}{s.is_archived ? ' (archived)' : ''}</option>)}
         </select>
       </Field>
       {error && !Object.keys(EMPTY).some((f) => fieldError(error, f)) && <div role="alert" className="text-danger small mb-3">{detailError(error)}</div>}

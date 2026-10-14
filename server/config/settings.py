@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'products',
     'orders',
     'chat',
+    'stock',
     'demo',
 ]
 

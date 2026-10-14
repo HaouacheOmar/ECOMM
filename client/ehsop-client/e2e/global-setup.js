@@ -29,6 +29,8 @@ for leftover in Product.objects.filter(name__startswith='Admin test '):
         img.image.delete(save=False)
     leftover.delete()
 Category.objects.filter(name__startswith='Test category ').delete()
+from stock.models import Supplier
+Supplier.objects.filter(name__startswith='Test supplier ').delete()
 
 # A small deterministic catalog, all names prefixed "E2E" so tests can isolate it.
 from decimal import Decimal

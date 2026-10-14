@@ -1,4 +1,4 @@
-import { Activity, LayoutDashboard, MapPin, Package, ReceiptText, Tags, Users } from 'lucide-react'
+import { Activity, Factory, LayoutDashboard, MapPin, Package, ReceiptText, Tags, Users } from 'lucide-react'
 import AnimatedOutlet from '../AnimatedOutlet.jsx'
 import useLiveOrders from '../orders/useLiveOrders.js'
 import IconRail, { RailAvatar, RailLink } from '../shell/Rail.jsx'
@@ -10,6 +10,7 @@ const NAV = [
   { to: '/admin/orders', label: 'Orders', Icon: ReceiptText },
   { to: '/admin/products', label: 'Products', Icon: Package },
   { to: '/admin/categories', label: 'Categories', Icon: Tags },
+  { to: '/admin/suppliers', label: 'Suppliers', Icon: Factory },
   { to: '/admin/pickup-points', label: 'Pickup Points', Icon: MapPin },
   { to: '/admin/employees', label: 'Employees', Icon: Users },
   { to: '/admin/activity', label: 'Activity log', Icon: Activity },

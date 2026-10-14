@@ -2,6 +2,8 @@ from django.conf import settings
 from rest_framework import serializers
 
 from orders.models import OrderItem
+from stock.models import Supplier
+from stock.serializers import SupplierBriefSerializer
 
 from .models import Category, Product, ProductImage
 
@@ -78,10 +80,17 @@ class ProductWriteSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=1)
     cost_price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)  # required for new Products
     stock = serializers.IntegerField(min_value=0)
+    usual_supplier = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), allow_null=True, required=False)
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'cost_price', 'stock', 'category']
+        fields = ['id', 'name', 'description', 'price', 'cost_price', 'stock', 'category', 'usual_supplier']
+
+    def validate_usual_supplier(self, supplier):
+        unchanged = self.instance is not None and supplier == self.instance.usual_supplier
+        if supplier is not None and supplier.is_archived and not unchanged:
+            raise serializers.ValidationError('This supplier is archived.')
+        return supplier
 
     def update(self, product, validated_data):
         was_missing = product.cost_price is None
@@ -93,12 +102,16 @@ class ProductWriteSerializer(serializers.ModelSerializer):
 
 
 class AdminProductListSerializer(ProductListSerializer):
-    """The catalog as the Admin sees it: with the Cost price (null = Cost missing)."""
+    """The catalog as the Admin sees it: with the Cost price (null = Cost missing) and Usual Supplier."""
+
+    usual_supplier = SupplierBriefSerializer(read_only=True)
 
     class Meta(ProductListSerializer.Meta):
-        fields = ProductListSerializer.Meta.fields + ['cost_price']
+        fields = ProductListSerializer.Meta.fields + ['cost_price', 'usual_supplier']
 
 
 class AdminProductDetailSerializer(ProductDetailSerializer):
+    usual_supplier = SupplierBriefSerializer(read_only=True)
+
     class Meta(ProductDetailSerializer.Meta):
-        fields = ProductDetailSerializer.Meta.fields + ['cost_price']
+        fields = ProductDetailSerializer.Meta.fields + ['cost_price', 'usual_supplier']

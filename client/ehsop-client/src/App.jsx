@@ -21,6 +21,8 @@ const DeskHome = lazy(() => import('./desk/DeskHome.jsx'))
 const EmployeesPage = lazy(() => import('./admin/EmployeesPage.jsx'))
 const ActivityPage = lazy(() => import('./admin/ActivityPage.jsx'))
 const PickupPointsPage = lazy(() => import('./admin/PickupPointsPage.jsx'))
+const SuppliersPage = lazy(() => import('./admin/SuppliersPage.jsx'))
+const SupplierFormPage = lazy(() => import('./admin/SupplierFormPage.jsx'))
 const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
 const CheckoutPage = lazy(() => import('./orders/CheckoutPage.jsx'))
 const MyOrdersPage = lazy(() => import('./orders/MyOrdersPage.jsx'))
@@ -57,6 +59,9 @@ export default function App() {
           <Route path="products/:id" element={<ProductFormPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="pickup-points" element={<PickupPointsPage />} />
+          <Route path="suppliers" element={<SuppliersPage />} />
+          <Route path="suppliers/new" element={<SupplierFormPage />} />
+          <Route path="suppliers/:id" element={<SupplierFormPage />} />
           <Route path="employees" element={<EmployeesPage />} />
           <Route path="activity" element={<ActivityPage />} />
           <Route path=":section" element={<Placeholder />} />
