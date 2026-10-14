@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector, useStore } from 'react-redux'
 import { api } from '../api.js'
-import { authApi } from '../auth/authApi.js'
+import { socketRefresher } from '../auth/authApi.js'
 import { connectSocket } from '../socket.js'
 
 // The Admin's live staff view: presence and Employee Session events refetch the Employees list and
@@ -16,7 +16,7 @@ export default function useLiveActivity() {
     const refetch = () => dispatch(api.util.invalidateTags(['Employee', 'EmployeeSession']))
     return connectSocket('/ws/activity/', {
       getToken: () => store.getState().auth.accessToken,
-      refresh: async () => Boolean((await dispatch(authApi.endpoints.restoreSession.initiate())).data),
+      refresh: socketRefresher(dispatch),
       onReady: refetch,
       onEvent: refetch,
     }).close

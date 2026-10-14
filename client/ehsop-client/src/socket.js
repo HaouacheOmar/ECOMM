@@ -34,7 +34,7 @@ export function connectSocket(path, { getToken, refresh, onReady, onEvent }) {
     socket.onclose = async (e) => {
       ready = false
       if (stopped) return
-      if (e.code === UNAUTHORIZED && !(await refresh())) return // the session is over
+      if (e.code === UNAUTHORIZED && (await refresh()) === false) return // the session is over (null: retry)
       // First retry is immediate (a routine token expiry); repeated failures back off up to 10 s.
       const delay = attempt === 0 ? 0 : Math.min(1000 * 2 ** attempt, 10000)
       attempt += 1

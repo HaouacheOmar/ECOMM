@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { emptyCustomerCart, placeOrder } from './api.js'
+import { emptyCustomerCart, moveOrder, placeOrder } from './api.js'
 import { loginAs } from './users.js'
 
 const number = (order) => `Order ${order.id.slice(0, 8).toUpperCase()}`
@@ -58,4 +58,23 @@ test('an employee ships an order and the customer sees it live in My Orders', as
   await expect(card).toContainText('Delivered')
   await notReloaded(page)
   await desk.close()
+})
+
+test('a network drop across a token expiry neither signs the customer out nor loses an update', async ({ page, request }) => {
+  const order = await placeOrder(request, 'Checkout Vase')
+  await loginAs(page, 'customer')
+  await page.goto('/#/orders')
+  const card = page.locator('.order-summary').filter({ hasText: number(order) })
+  await expect(card).toContainText('Confirmed')
+  await mark(page)
+
+  await page.context().setOffline(true)
+  await moveOrder(request, order.id, 'ship') // happens while the customer is offline
+  await page.waitForTimeout(OUTLIVE_TOKEN + 1000) // the token expires while offline
+  await page.context().setOffline(false)
+
+  await expect(card).toContainText('Shipped', { timeout: 20000 })
+  await expect(page).toHaveURL(/#\/orders$/)
+  await expect(page.getByRole('navigation', { name: 'Shop' }).getByRole('link', { name: 'Account' })).toBeVisible()
+  await notReloaded(page)
 })

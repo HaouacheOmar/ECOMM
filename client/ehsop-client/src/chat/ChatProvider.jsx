@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector, useStore } from 'react-redux'
 import { api } from '../api.js'
-import { authApi } from '../auth/authApi.js'
+import { socketRefresher } from '../auth/authApi.js'
 import { connectSocket } from '../socket.js'
 import { ChatContext } from './chatContext.js'
 
@@ -32,7 +32,7 @@ export default function ChatProvider({ children }) {
     const transmit = ({ client_id, body, to }) => socket.current?.send({ type: 'send', client_id, body, ...(to && { to }) })
     socket.current = connectSocket('/ws/chat/', {
       getToken: () => store.getState().auth.accessToken,
-      refresh: async () => Boolean((await dispatch(authApi.endpoints.restoreSession.initiate())).data),
+      refresh: socketRefresher(dispatch),
       onReady: () => {
         refetch()
         Object.values(pendingRef.current).filter((m) => m.status === 'sending').forEach(transmit)

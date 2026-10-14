@@ -1,6 +1,14 @@
 import { api, refreshSession, waitForSessionChange } from '../api.js'
 import { sessionEnded, sessionStarted } from './authSlice.js'
 
+// For connectSocket's `refresh`: true = refreshed, false = the session is over (stop),
+// null = couldn't reach the server (keep retrying with backoff).
+export const socketRefresher = (dispatch) => async () => {
+  const result = await dispatch(authApi.endpoints.restoreSession.initiate())
+  if (result.data) return true
+  return result.error?.status === 401 ? false : null
+}
+
 export const authApi = api.injectEndpoints({
   endpoints: (build) => ({
     login: build.mutation({

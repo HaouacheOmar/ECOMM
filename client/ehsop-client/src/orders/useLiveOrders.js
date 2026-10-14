@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector, useStore } from 'react-redux'
 import { api } from '../api.js'
-import { authApi } from '../auth/authApi.js'
+import { socketRefresher } from '../auth/authApi.js'
 import { connectSocket } from '../socket.js'
 
 // Keeps every Order list and page current: staff get all Orders, a Customer their own. Any event,
@@ -16,7 +16,7 @@ export default function useLiveOrders() {
     const refetch = () => dispatch(api.util.invalidateTags(['Order']))
     return connectSocket('/ws/orders/', {
       getToken: () => store.getState().auth.accessToken,
-      refresh: async () => Boolean((await dispatch(authApi.endpoints.restoreSession.initiate())).data),
+      refresh: socketRefresher(dispatch),
       onReady: refetch,
       onEvent: refetch,
     }).close

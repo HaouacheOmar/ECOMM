@@ -175,3 +175,19 @@ def test_the_seeded_shop_has_suppliers_costs_restocks_and_statistics():
     assert sum(Decimal(m['spent']) > 0 for m in history) >= 6
     assert admin.get('/api/stats/month/').data['current']['profit_incomplete'] is False
     assert admin.get('/api/stats/low-stock/').data  # some Products need restocking
+
+
+def test_simulated_activity_never_acts_as_the_try_as_customer(settings):
+    """A visitor may be shopping as the "Try as Customer": the simulation must not touch them."""
+    settings.DEMO_MODE = True
+    call_command('seed_demo')
+    visitor = User.objects.get(email=DEMO_LOGINS['CUSTOMER'])
+    orders, messages = visitor.orders.count(), ChatMessage.objects.filter(customer=visitor).count()
+
+    assert simulate_activity('order', customer_email=visitor.email) is None
+    assert simulate_activity('message', customer_email=visitor.email) is None
+    for _ in range(40):
+        simulate_activity()
+
+    assert visitor.orders.count() == orders
+    assert ChatMessage.objects.filter(customer=visitor).count() == messages

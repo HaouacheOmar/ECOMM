@@ -10,7 +10,7 @@ from orders.checkout import OutOfStock, announce, place_order
 from orders.models import Cart, CartItem, Order, PickupPoint
 from products.models import Product
 
-from .seed import DOMAIN, SIMULATED_MESSAGES
+from .seed import DEMO_LOGINS, DOMAIN, SIMULATED_MESSAGES
 
 
 @shared_task
@@ -20,7 +20,10 @@ def simulate_activity(kind=None, customer_email=None):
     kind ('order' or 'message') and customer_email pin the choice (tests)."""
     if not settings.DEMO_MODE:
         return None
-    customers = User.objects.filter(email__endswith=f'@{DOMAIN}', role=User.Role.CUSTOMER, is_active=True)
+    # Never the "Try as Customer" account: a visitor may be shopping as them (it would empty their
+    # Cart and place Orders and messages they never made).
+    customers = (User.objects.filter(email__endswith=f'@{DOMAIN}', role=User.Role.CUSTOMER, is_active=True)
+                 .exclude(email=DEMO_LOGINS['CUSTOMER']))
     if customer_email:
         customers = customers.filter(email=customer_email)
     customers = list(customers)

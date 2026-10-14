@@ -51,3 +51,7 @@ export async function placeOrder(request, name, quantity = 1) {
   const [point] = await call(request, 'customer', 'GET', 'pickup-points/')
   return call(request, 'customer', 'POST', 'orders/', { delivery_method: 'PICKUP_POINT', pickup_point: point.id })
 }
+
+export async function moveOrder(request, orderId, action) {
+  return call(request, 'admin', 'POST', `orders/${orderId}/${action}/`)
+}

@@ -38,7 +38,13 @@ export function refreshSession(api, extraOptions) {
       await wait(500)
       result = await rawBaseQuery({ url: 'auth/refresh/', method: 'POST' }, api, extraOptions)
     }
-    api.dispatch(result.data ? sessionStarted(result.data) : sessionEnded())
+    if (result.data) {
+      api.dispatch(sessionStarted(result.data))
+    } else if (result.error?.status === 401 || api.getState().auth.status !== 'authenticated') {
+      // The server refused the session (or there was none yet). A network failure while signed in
+      // (offline, server restarting) is not a sign-out: the next request or socket retry refreshes.
+      api.dispatch(sessionEnded())
+    }
     return result
   })().finally(() => {
     refreshing = null
