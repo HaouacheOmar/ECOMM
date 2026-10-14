@@ -82,7 +82,7 @@ class ProductWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'cost_price', 'stock', 'category', 'usual_supplier']
+        fields = ['id', 'name', 'description', 'price', 'cost_price', 'stock', 'reorder_level', 'category', 'usual_supplier']
         read_only_fields = ['stock']  # only Orders, Restocks and Stock Corrections change it; new Products start at 0
 
     def validate_usual_supplier(self, supplier):
@@ -105,11 +105,11 @@ class AdminProductListSerializer(ProductListSerializer):
     usual_supplier = SupplierBriefSerializer(read_only=True)
 
     class Meta(ProductListSerializer.Meta):
-        fields = ProductListSerializer.Meta.fields + ['cost_price', 'usual_supplier']
+        fields = ProductListSerializer.Meta.fields + ['cost_price', 'reorder_level', 'usual_supplier']
 
 
 class AdminProductDetailSerializer(ProductDetailSerializer):
     usual_supplier = SupplierBriefSerializer(read_only=True)
 
     class Meta(ProductDetailSerializer.Meta):
-        fields = ProductDetailSerializer.Meta.fields + ['cost_price', 'usual_supplier']
+        fields = ProductDetailSerializer.Meta.fields + ['cost_price', 'reorder_level', 'usual_supplier']

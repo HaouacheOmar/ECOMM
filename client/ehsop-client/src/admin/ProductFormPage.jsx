@@ -16,7 +16,7 @@ import StockPanel from './StockPanel.jsx'
 import { useSuppliersQuery } from './suppliersApi.js'
 
 // Stock is not edited here: it changes through Orders, Restocks and Stock Corrections (StockPanel).
-const EMPTY = { name: '', description: '', price: '', cost_price: '', category: '', usual_supplier: '' }
+const EMPTY = { name: '', description: '', price: '', cost_price: '', reorder_level: '5', category: '', usual_supplier: '' }
 
 export function Field({ id, label, error, children }) {
   return (
@@ -39,7 +39,7 @@ function ProductForm({ product }) {
   const [create, created] = useCreateProductMutation()
   const [update, updated] = useUpdateProductMutation()
   const [form, setForm] = useState(product
-    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', category: product.category.id, usual_supplier: product.usual_supplier?.id ?? '' }
+    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', reorder_level: String(product.reorder_level), category: product.category.id, usual_supplier: product.usual_supplier?.id ?? '' }
     : EMPTY)
   const [saved, setSaved] = useState(false)
   const result = product ? updated : created
@@ -86,6 +86,10 @@ function ProductForm({ product }) {
           <option value="">Choose a category</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
+      </Field>
+      <Field id="p-reorder_level" label="Reorder level" error={fieldError(error, 'reorder_level')}>
+        {input('reorder_level', { type: 'number', min: 0, step: 1, 'aria-describedby': 'p-reorder_level-help' })}
+        <div id="p-reorder_level-help" className="form-text">Listed as Low stock at or below this many units.</div>
       </Field>
       <Field id="p-usual_supplier" label="Usual supplier (optional)" error={fieldError(error, 'usual_supplier')}>
         <select id="p-usual_supplier" name="usual_supplier" className={`form-select${fieldError(error, 'usual_supplier') ? ' is-invalid' : ''}`} value={form.usual_supplier} onChange={onChange}>

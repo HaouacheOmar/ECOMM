@@ -51,7 +51,8 @@ test('admin restocks a product, cancels the restock, and corrects stock with a r
   await page.getByLabel('Reason').selectOption('Breakage')
   await page.getByRole('button', { name: 'Correct' }).click()
   await expect(page.getByTestId('stock-level')).toHaveText('2')
-  await expect(page.getByRole('row', { name: /Correction · Breakage/ })).toContainText('-1')
+  // Newest first (earlier runs leave their own corrections in this Product's history).
+  await expect(page.getByRole('row', { name: /Correction · Breakage/ }).first()).toContainText('-1')
 
   await setStock(request, 'Restock Lamp', 3)
 })
