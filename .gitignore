@@ -11,7 +11,12 @@ docs/
 docx/
 server/media/
 .claude/
-.playwright-mcp/
-brag-output/
 server/staticfiles/
 PRD.md
+
+# Test and demo artifacts (browser-test screenshots, Playwright output, the brag video build)
+.playwright-mcp/
+brag-output/
+test-results/
+playwright-report/
+*.bak-*
