@@ -70,6 +70,8 @@ def test_bestsellers_rank_units_sold_in_the_last_30_days_without_cancelled_order
 
 def test_fewer_than_8_bestsellers_are_padded_with_the_newest_products(kitchen):
     items = [product(kitchen, f'P{n}') for n in range(10)]  # P9 is the newest
+    for age, item in enumerate(reversed(items)):  # distinct times: Windows' clock can stamp them identically
+        Product.objects.filter(pk=item.pk).update(created_at=timezone.now() - timedelta(minutes=age))
     sell(items[0], 1)
     product(kitchen, 'Archived', is_archived=True)
 

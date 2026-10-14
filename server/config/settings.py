@@ -183,6 +183,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
+SHOP_TIME_ZONE = 'Africa/Algiers'  # Restock dates and the Admin's months (Statistics)
 USE_I18N = True
 USE_TZ = True
 

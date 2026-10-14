@@ -29,7 +29,8 @@ for leftover in Product.objects.filter(name__startswith='Admin test '):
         img.image.delete(save=False)
     leftover.delete()
 Category.objects.filter(name__startswith='Test category ').delete()
-from stock.models import Supplier
+from stock.models import Restock, Supplier
+Restock.objects.filter(supplier__name__startswith='Test supplier ').delete()
 Supplier.objects.filter(name__startswith='Test supplier ').delete()
 
 # A small deterministic catalog, all names prefixed "E2E" so tests can isolate it.
@@ -50,7 +51,7 @@ for name, category, price, stock, archived in [
 
 # Checkout fixtures, outside the "E2E" catalog so catalog specs are unaffected; stock reset every run.
 decor, _ = Category.objects.get_or_create(name='Home decor')
-for name, stock in [('Checkout Vase', 50), ('Checkout Candle', 1), ('Review Teapot', 0)]:
+for name, stock in [('Checkout Vase', 50), ('Checkout Candle', 1), ('Review Teapot', 0), ('Restock Lamp', 3)]:
     Product.objects.update_or_create(name=name, defaults={
         'category': decor, 'price': Decimal('2000'), 'stock': stock, 'is_archived': False,
     })

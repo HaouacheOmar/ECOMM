@@ -219,7 +219,9 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             order.status = to
             if to == Order.Status.DELIVERED:
                 order.delivered_at = timezone.now()
-            order.save(update_fields=['status', 'delivered_at'])
+            if to == Order.Status.CANCELLED:
+                order.cancelled_at = timezone.now()
+            order.save(update_fields=['status', 'delivered_at', 'cancelled_at'])
             if to == Order.Status.CANCELLED:
                 for item in order.items.all():
                     Product.objects.filter(pk=item.product_id).update(stock=F('stock') + item.quantity)

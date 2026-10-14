@@ -12,9 +12,11 @@ import {
   useUpdateProductMutation,
   useUploadImageMutation,
 } from './catalogApi.js'
+import StockPanel from './StockPanel.jsx'
 import { useSuppliersQuery } from './suppliersApi.js'
 
-const EMPTY = { name: '', description: '', price: '', cost_price: '', stock: '0', category: '', usual_supplier: '' }
+// Stock is not edited here: it changes through Orders, Restocks and Stock Corrections (StockPanel).
+const EMPTY = { name: '', description: '', price: '', cost_price: '', category: '', usual_supplier: '' }
 
 export function Field({ id, label, error, children }) {
   return (
@@ -37,7 +39,7 @@ function ProductForm({ product }) {
   const [create, created] = useCreateProductMutation()
   const [update, updated] = useUpdateProductMutation()
   const [form, setForm] = useState(product
-    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', stock: String(product.stock), category: product.category.id, usual_supplier: product.usual_supplier?.id ?? '' }
+    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', category: product.category.id, usual_supplier: product.usual_supplier?.id ?? '' }
     : EMPTY)
   const [saved, setSaved] = useState(false)
   const result = product ? updated : created
@@ -72,13 +74,12 @@ function ProductForm({ product }) {
         <textarea id="p-description" name="description" rows={4} className="form-control" value={form.description} onChange={onChange} />
       </Field>
       <div className="row">
-        <div className="col-sm-4"><Field id="p-price" label="Price (DA)" error={fieldError(error, 'price')}>{input('price', { type: 'number', min: 1, step: '0.01', inputMode: 'decimal' })}</Field></div>
-        <div className="col-sm-4">
+        <div className="col-sm-6"><Field id="p-price" label="Price (DA)" error={fieldError(error, 'price')}>{input('price', { type: 'number', min: 1, step: '0.01', inputMode: 'decimal' })}</Field></div>
+        <div className="col-sm-6">
           <Field id="p-cost_price" label="Cost price (DA)" error={fieldError(error, 'cost_price') ?? (product && product.cost_price == null ? 'Cost missing: Gross profit stays incomplete until you fill it.' : null)}>
             {input('cost_price', { type: 'number', min: 0, step: '0.01', inputMode: 'decimal' })}
           </Field>
         </div>
-        <div className="col-sm-4"><Field id="p-stock" label="Stock" error={fieldError(error, 'stock')}>{input('stock', { type: 'number', min: 0, step: 1 })}</Field></div>
       </div>
       <Field id="p-category" label="Category" error={fieldError(error, 'category')}>
         <select id="p-category" name="category" className={`form-select${fieldError(error, 'category') ? ' is-invalid' : ''}`} value={form.category} onChange={onChange}>
@@ -161,6 +162,7 @@ export default function ProductFormPage() {
         )}
       </div>
       <ProductForm key={product?.id ?? 'new'} product={product} />
+      {product && <StockPanel product={product} />}
       {product && <Photos product={product} />}
     </section>
   )

@@ -37,6 +37,14 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def set_cost_price(self, cost):
+        """Filling a Cost missing also completes earlier Order lines that had none; kept costs never change."""
+        was_missing = self.cost_price is None
+        Product.objects.filter(pk=self.pk).update(cost_price=cost)
+        self.cost_price = cost
+        if was_missing:
+            self.order_items.filter(cost_at_purchase__isnull=True).update(cost_at_purchase=cost)
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')

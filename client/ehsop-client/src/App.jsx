@@ -23,6 +23,9 @@ const ActivityPage = lazy(() => import('./admin/ActivityPage.jsx'))
 const PickupPointsPage = lazy(() => import('./admin/PickupPointsPage.jsx'))
 const SuppliersPage = lazy(() => import('./admin/SuppliersPage.jsx'))
 const SupplierFormPage = lazy(() => import('./admin/SupplierFormPage.jsx'))
+const RestocksPage = lazy(() => import('./admin/RestocksPage.jsx'))
+const RestockFormPage = lazy(() => import('./admin/RestockFormPage.jsx'))
+const RestockDetailPage = lazy(() => import('./admin/RestockDetailPage.jsx'))
 const CatalogPage = lazy(() => import('./products/CatalogPage.jsx'))
 const CheckoutPage = lazy(() => import('./orders/CheckoutPage.jsx'))
 const MyOrdersPage = lazy(() => import('./orders/MyOrdersPage.jsx'))
@@ -62,6 +65,9 @@ export default function App() {
           <Route path="suppliers" element={<SuppliersPage />} />
           <Route path="suppliers/new" element={<SupplierFormPage />} />
           <Route path="suppliers/:id" element={<SupplierFormPage />} />
+          <Route path="restocks" element={<RestocksPage />} />
+          <Route path="restocks/new" element={<RestockFormPage />} />
+          <Route path="restocks/:id" element={<RestockDetailPage />} />
           <Route path="employees" element={<EmployeesPage />} />
           <Route path="activity" element={<ActivityPage />} />
           <Route path=":section" element={<Placeholder />} />

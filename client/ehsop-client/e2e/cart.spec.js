@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { emptyCustomerCart, setArchived, updateProduct } from './api.js'
+import { emptyCustomerCart, setArchived, setStock } from './api.js'
 import { loginAs, searchCatalog } from './users.js'
 
 const cartButton = (page) => page.getByRole('button', { name: /^Cart, / })
@@ -57,7 +57,7 @@ test('quantity is capped at stock and a sold-out item blocks checkout', async ({
   await expect(drawer(page).getByRole('link', { name: 'Checkout' })).toBeVisible()
 
   try {
-    await updateProduct(request, 'E2E Board', { stock: 2 })
+    await setStock(request, 'E2E Board', 2)
     await page.reload()
     await cartButton(page).click()
     await expect(line(page, 'E2E Board')).toContainText('Only 2 left')
@@ -66,7 +66,7 @@ test('quantity is capped at stock and a sold-out item blocks checkout', async ({
     await line(page, 'E2E Board').getByRole('button', { name: 'Decrease quantity of E2E Board' }).click()
     await expect(drawer(page).getByRole('link', { name: 'Checkout' })).toBeVisible()
   } finally {
-    await updateProduct(request, 'E2E Board', { stock: 3 })
+    await setStock(request, 'E2E Board', 3)
   }
 })
 

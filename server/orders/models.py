@@ -61,6 +61,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)  # DZD, cash on delivery, no fees
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     delivered_at = models.DateTimeField(null=True, blank=True, db_index=True)  # Revenue counts from here (ADR 0002)
+    cancelled_at = models.DateTimeField(null=True, blank=True)  # when the stock came back
 
     class Meta:
         ordering = ['-created_at']

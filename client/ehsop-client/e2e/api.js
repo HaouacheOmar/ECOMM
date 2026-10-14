@@ -28,6 +28,13 @@ export async function updateProduct(request, name, changes) {
   return call(request, 'admin', 'PATCH', `products/${await productId(request, name)}/`, changes)
 }
 
+// Stock is never typed in: tests set it with a Stock Correction, as the Admin would.
+export async function setStock(request, name, target) {
+  const product = await findProduct(request, name)
+  if (product.stock === target) return
+  await call(request, 'admin', 'POST', 'stock-corrections/', { product: product.id, quantity: target - product.stock, reason: 'MISCOUNT' })
+}
+
 export async function setArchived(request, name, archived) {
   return call(request, 'admin', 'POST', `products/${await productId(request, name)}/${archived ? 'archive' : 'restore'}/`)
 }

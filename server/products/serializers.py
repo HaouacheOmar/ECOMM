@@ -1,7 +1,6 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from orders.models import OrderItem
 from stock.models import Supplier
 from stock.serializers import SupplierBriefSerializer
 
@@ -79,12 +78,12 @@ class ProductWriteSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=1)
     cost_price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)  # required for new Products
-    stock = serializers.IntegerField(min_value=0)
     usual_supplier = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), allow_null=True, required=False)
 
     class Meta:
         model = Product
         fields = ['id', 'name', 'description', 'price', 'cost_price', 'stock', 'category', 'usual_supplier']
+        read_only_fields = ['stock']  # only Orders, Restocks and Stock Corrections change it; new Products start at 0
 
     def validate_usual_supplier(self, supplier):
         unchanged = self.instance is not None and supplier == self.instance.usual_supplier
@@ -93,11 +92,10 @@ class ProductWriteSerializer(serializers.ModelSerializer):
         return supplier
 
     def update(self, product, validated_data):
-        was_missing = product.cost_price is None
+        cost = validated_data.pop('cost_price', None)
         product = super().update(product, validated_data)
-        if was_missing and product.cost_price is not None:
-            # Filling a Cost missing completes earlier Order lines that had none; kept costs never change.
-            OrderItem.objects.filter(product=product, cost_at_purchase__isnull=True).update(cost_at_purchase=product.cost_price)
+        if cost is not None and cost != product.cost_price:
+            product.set_cost_price(cost)
         return product
 
 

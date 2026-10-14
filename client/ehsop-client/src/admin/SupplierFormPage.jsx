@@ -1,8 +1,11 @@
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { formatPrice } from '../products/formatPrice.js'
 import { detailError, fieldError } from './catalogApi.js'
 import { Field } from './ProductFormPage.jsx'
+import { RestockTable } from './RestocksPage.jsx'
+import { useRestocksQuery } from './stockApi.js'
 import { useCreateSupplierMutation, useSetSupplierArchivedMutation, useSupplierQuery, useUpdateSupplierMutation } from './suppliersApi.js'
 
 const EMPTY = { name: '', phone: '', email: '', address: '', notes: '' }
@@ -57,6 +60,19 @@ function SupplierForm({ supplier }) {
   )
 }
 
+function SupplierRestocks({ supplier }) {
+  const { data } = useRestocksQuery({ supplier: supplier.id })
+  return (
+    <section className="card p-4 mt-3" aria-labelledby="supplier-restocks">
+      <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <h2 id="supplier-restocks" className="h5 me-auto mb-0">Restocks</h2>
+        <span>Total spent <strong>{formatPrice(supplier.total_spent)}</strong></span>
+      </div>
+      {data && <RestockTable restocks={data.results} showSupplier={false} />}
+    </section>
+  )
+}
+
 export default function SupplierFormPage() {
   const { id } = useParams()
   const { data: supplier, isLoading, isError } = useSupplierQuery(id, { skip: !id })
@@ -81,6 +97,7 @@ export default function SupplierFormPage() {
         )}
       </div>
       <SupplierForm key={supplier?.id ?? 'new'} supplier={supplier} />
+      {supplier && <SupplierRestocks supplier={supplier} />}
     </section>
   )
 }

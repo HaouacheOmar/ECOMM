@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { emptyCustomerCart, findProduct, updateProduct } from './api.js'
+import { emptyCustomerCart, findProduct, setStock } from './api.js'
 import { loginAs, PASSWORD, searchCatalog, USERS } from './users.js'
 
 const drawer = (page) => page.getByRole('dialog', { name: 'Your cart' })
@@ -56,14 +56,14 @@ test('an item that sells out during checkout is marked unavailable', async ({ pa
   await goToCheckout(page)
   await page.getByRole('combobox', { name: 'Pickup Point' }).selectOption({ label: 'Algiers: E2E Hydra office, 12 Rue Didouche Mourad' })
 
-  await updateProduct(request, 'Checkout Candle', { stock: 0 })
+  await setStock(request, 'Checkout Candle', 0)
   try {
     await confirmButton(page).click()
     await expect(page.getByRole('alert')).toContainText('Some items sold out')
     await expect(page.getByRole('note')).toHaveText('Sold out. Remove it to continue.')
     await expect(confirmButton(page)).toBeDisabled()
   } finally {
-    await updateProduct(request, 'Checkout Candle', { stock: 1 })
+    await setStock(request, 'Checkout Candle', 1)
   }
 })
 

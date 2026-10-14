@@ -1,7 +1,9 @@
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
 from django.db import IntegrityError
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from products.models import Category, Product
@@ -66,9 +68,10 @@ def test_search_by_name_is_case_insensitive(client, kitchen):
 
 
 def test_sort_by_price_rating_and_newest(client, kitchen):
-    product(kitchen, 'Mid', price='2000', rating_avg=Decimal('3.0'))
-    product(kitchen, 'Cheap', price='500', rating_avg=Decimal('4.5'))
-    product(kitchen, 'Pricey', price='9000', rating_avg=Decimal('4.0'))
+    for age, (name, price, rating) in enumerate([('Pricey', '9000', '4.0'), ('Cheap', '500', '4.5'), ('Mid', '2000', '3.0')]):
+        made = product(kitchen, name, price=price, rating_avg=Decimal(rating))
+        # Distinct creation times: Windows' clock can stamp quickly created rows identically.
+        Product.objects.filter(pk=made.pk).update(created_at=timezone.now() - timedelta(minutes=age))
 
     assert names(client.get('/api/products/?ordering=price')) == ['Cheap', 'Mid', 'Pricey']
     assert names(client.get('/api/products/?ordering=-price')) == ['Pricey', 'Mid', 'Cheap']

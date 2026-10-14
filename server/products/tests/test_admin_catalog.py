@@ -62,9 +62,11 @@ def test_admin_creates_and_edits_a_product(admin, kitchen):
         'name': 'Oak board', 'description': 'Solid oak', 'price': '3800', 'cost_price': '2100', 'stock': 3, 'category': kitchen.id,
     }, format='json')
     assert created.status_code == 201
+    assert created.data['stock'] == 0  # new Products start empty; stock comes from a Restock
 
     product_id = created.data['id']
-    assert admin.patch(f'/api/products/{product_id}/', {'price': '3500', 'stock': 0}, format='json').status_code == 200
+    edited = admin.patch(f'/api/products/{product_id}/', {'price': '3500', 'stock': 9}, format='json')
+    assert edited.status_code == 200 and edited.data['stock'] == 0  # never typed in directly
 
     public = APIClient().get(f'/api/products/{product_id}/').data
     assert public['name'] == 'Oak board'
@@ -72,11 +74,11 @@ def test_admin_creates_and_edits_a_product(admin, kitchen):
     assert public['in_stock'] is False
 
 
-def test_product_validation_rejects_bad_price_and_stock(admin, kitchen):
+def test_product_validation_rejects_bad_prices(admin, kitchen):
     response = admin.post('/api/products/', {'name': 'Bad', 'price': '0', 'cost_price': '-1', 'stock': -1, 'category': kitchen.id}, format='json')
 
     assert response.status_code == 400
-    assert set(response.data) == {'price', 'cost_price', 'stock'}
+    assert set(response.data) == {'price', 'cost_price'}
 
 
 def test_a_new_product_needs_a_cost_price(admin, kitchen):

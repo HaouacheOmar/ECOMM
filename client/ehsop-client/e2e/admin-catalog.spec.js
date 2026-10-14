@@ -14,7 +14,6 @@ test('admin creates a product with a photo, then archives and restores it', asyn
   await page.getByLabel('Description').fill('Made in the E2E workshop.')
   await page.getByLabel('Price (DA)', { exact: true }).fill('4500')
   await page.getByLabel('Cost price (DA)').fill('2500')
-  await page.getByLabel('Stock').fill('7')
   await page.getByLabel('Category').selectOption({ label: 'Kitchen' })
   await page.getByRole('button', { name: 'Create product' }).click()
 
