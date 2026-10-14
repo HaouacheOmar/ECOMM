@@ -12,7 +12,8 @@ test('admin creates a product with a photo, then archives and restores it', asyn
 
   await page.getByLabel('Name').fill(name)
   await page.getByLabel('Description').fill('Made in the E2E workshop.')
-  await page.getByLabel('Price (DA)').fill('4500')
+  await page.getByLabel('Price (DA)', { exact: true }).fill('4500')
+  await page.getByLabel('Cost price (DA)').fill('2500')
   await page.getByLabel('Stock').fill('7')
   await page.getByLabel('Category').selectOption({ label: 'Kitchen' })
   await page.getByRole('button', { name: 'Create product' }).click()
@@ -50,7 +51,7 @@ test('product form shows validation errors next to fields', async ({ page }) => 
   await loginAs(page, 'admin')
   await page.goto('/#/admin/products/new')
   await page.getByLabel('Name').fill('Admin test invalid')
-  await page.getByLabel('Price (DA)').fill('0')
+  await page.getByLabel('Price (DA)', { exact: true }).fill('0')
   await page.getByRole('button', { name: 'Create product' }).click()
 
   await expect(page.locator('#p-price-error')).toBeVisible()

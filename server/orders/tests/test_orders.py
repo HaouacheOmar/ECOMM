@@ -7,7 +7,7 @@ from django.db import connection
 from rest_framework.test import APIClient
 
 from accounts.models import User
-from orders.models import Order, PickupPoint
+from orders.models import Order, OrderItem, PickupPoint
 from products.models import Category, Product
 
 pytestmark = pytest.mark.django_db
@@ -318,3 +318,41 @@ def test_staff_filter_orders_by_customer(admin, placed):
     assert admin.get(f'/api/orders/?customer={customer_id}').data['count'] == 1
     assert admin.get(f'/api/orders/?customer={User.objects.create_user("x@eshop.test", "x").pk}').data['count'] == 0
     assert admin.get('/api/orders/?customer=nope').status_code == 400
+
+
+def kept_cost(order):
+    return OrderItem.objects.get(order_id=order['id']).cost_at_purchase
+
+
+def test_checkout_keeps_the_cost_price_and_later_changes_do_not_alter_it(customer, admin, kitchen, algiers):
+    mug = product(kitchen, cost_price=Decimal('700'))
+    add(customer, mug, 2)
+    order = checkout(customer, algiers).data
+
+    assert admin.patch(f'/api/products/{mug.id}/', {'cost_price': '900'}, format='json').status_code == 200
+
+    assert kept_cost(order) == Decimal('700')
+
+
+def test_filling_a_missing_cost_price_completes_earlier_lines_without_overwriting_kept_ones(customer, admin, kitchen, algiers):
+    mug = product(kitchen)  # Cost missing
+    add(customer, mug)
+    sold_without_cost = checkout(customer, algiers).data
+    assert kept_cost(sold_without_cost) is None
+
+    admin.patch(f'/api/products/{mug.id}/', {'cost_price': '650'}, format='json')
+    assert kept_cost(sold_without_cost) == Decimal('650')
+
+    admin.patch(f'/api/products/{mug.id}/', {'cost_price': '800'}, format='json')
+    assert kept_cost(sold_without_cost) == Decimal('650')
+
+
+def test_delivering_records_when_the_order_was_delivered(admin, placed):
+    order, _ = placed
+
+    admin.post(f'/api/orders/{order["id"]}/ship/')
+    assert Order.objects.get(pk=order['id']).delivered_at is None
+
+    admin.post(f'/api/orders/{order["id"]}/deliver/')
+    delivered = Order.objects.get(pk=order['id'])
+    assert delivered.delivered_at is not None and delivered.delivered_at >= delivered.created_at

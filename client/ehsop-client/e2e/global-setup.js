@@ -22,6 +22,9 @@ User.objects.filter(email__startswith='staff-', email__endswith='@e2e.test').del
 # Leftovers from earlier Admin-catalog runs.
 from products.models import Category, Product
 for leftover in Product.objects.filter(name__startswith='Admin test '):
+    if leftover.order_items.exists():  # ordered by the demo's simulated activity: kept in Order history
+        Product.objects.filter(pk=leftover.pk).update(is_archived=True)
+        continue
     for img in leftover.images.all():
         img.image.delete(save=False)
     leftover.delete()

@@ -13,7 +13,7 @@ import {
   useUploadImageMutation,
 } from './catalogApi.js'
 
-const EMPTY = { name: '', description: '', price: '', stock: '0', category: '' }
+const EMPTY = { name: '', description: '', price: '', cost_price: '', stock: '0', category: '' }
 
 function Field({ id, label, error, children }) {
   return (
@@ -31,7 +31,7 @@ function ProductForm({ product }) {
   const [create, created] = useCreateProductMutation()
   const [update, updated] = useUpdateProductMutation()
   const [form, setForm] = useState(product
-    ? { name: product.name, description: product.description, price: product.price, stock: String(product.stock), category: product.category.id }
+    ? { name: product.name, description: product.description, price: product.price, cost_price: product.cost_price ?? '', stock: String(product.stock), category: product.category.id }
     : EMPTY)
   const [saved, setSaved] = useState(false)
   const result = product ? updated : created
@@ -45,7 +45,9 @@ function ProductForm({ product }) {
   const onSubmit = async (e) => {
     e.preventDefault()
     if (product) {
-      if ((await update({ id: product.id, ...form })).data) setSaved(true)
+      // A Product with Cost missing keeps it missing until a Cost price is typed.
+      const changes = form.cost_price === '' ? { ...form, cost_price: undefined } : form
+      if ((await update({ id: product.id, ...changes })).data) setSaved(true)
     } else {
       const { data } = await create(form)
       if (data) navigate(`/admin/products/${data.id}`, { replace: true })
@@ -64,8 +66,13 @@ function ProductForm({ product }) {
         <textarea id="p-description" name="description" rows={4} className="form-control" value={form.description} onChange={onChange} />
       </Field>
       <div className="row">
-        <div className="col-sm-6"><Field id="p-price" label="Price (DA)" error={fieldError(error, 'price')}>{input('price', { type: 'number', min: 1, step: '0.01', inputMode: 'decimal' })}</Field></div>
-        <div className="col-sm-6"><Field id="p-stock" label="Stock" error={fieldError(error, 'stock')}>{input('stock', { type: 'number', min: 0, step: 1 })}</Field></div>
+        <div className="col-sm-4"><Field id="p-price" label="Price (DA)" error={fieldError(error, 'price')}>{input('price', { type: 'number', min: 1, step: '0.01', inputMode: 'decimal' })}</Field></div>
+        <div className="col-sm-4">
+          <Field id="p-cost_price" label="Cost price (DA)" error={fieldError(error, 'cost_price') ?? (product && product.cost_price == null ? 'Cost missing: Gross profit stays incomplete until you fill it.' : null)}>
+            {input('cost_price', { type: 'number', min: 0, step: '0.01', inputMode: 'decimal' })}
+          </Field>
+        </div>
+        <div className="col-sm-4"><Field id="p-stock" label="Stock" error={fieldError(error, 'stock')}>{input('stock', { type: 'number', min: 0, step: 1 })}</Field></div>
       </div>
       <Field id="p-category" label="Category" error={fieldError(error, 'category')}>
         <select id="p-category" name="category" className={`form-select${fieldError(error, 'category') ? ' is-invalid' : ''}`} value={form.category} onChange={onChange}>

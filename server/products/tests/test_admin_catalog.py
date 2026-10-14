@@ -59,7 +59,7 @@ def test_only_the_admin_can_write_the_catalog(role, kitchen, mug):
 
 def test_admin_creates_and_edits_a_product(admin, kitchen):
     created = admin.post('/api/products/', {
-        'name': 'Oak board', 'description': 'Solid oak', 'price': '3800', 'stock': 3, 'category': kitchen.id,
+        'name': 'Oak board', 'description': 'Solid oak', 'price': '3800', 'cost_price': '2100', 'stock': 3, 'category': kitchen.id,
     }, format='json')
     assert created.status_code == 201
 
@@ -73,10 +73,30 @@ def test_admin_creates_and_edits_a_product(admin, kitchen):
 
 
 def test_product_validation_rejects_bad_price_and_stock(admin, kitchen):
-    response = admin.post('/api/products/', {'name': 'Bad', 'price': '0', 'stock': -1, 'category': kitchen.id}, format='json')
+    response = admin.post('/api/products/', {'name': 'Bad', 'price': '0', 'cost_price': '-1', 'stock': -1, 'category': kitchen.id}, format='json')
 
     assert response.status_code == 400
-    assert set(response.data) == {'price', 'stock'}
+    assert set(response.data) == {'price', 'cost_price', 'stock'}
+
+
+def test_a_new_product_needs_a_cost_price(admin, kitchen):
+    response = admin.post('/api/products/', {'name': 'Oak board', 'price': '3800', 'stock': 3, 'category': kitchen.id}, format='json')
+
+    assert response.status_code == 400
+    assert set(response.data) == {'cost_price'}
+
+
+def test_only_the_admin_sees_the_cost_price_and_cost_missing_is_null(admin, mug):
+    priced = Product.objects.create(category=mug.category, name='Bowl', price=Decimal('900'), cost_price=Decimal('400'))
+
+    listed = {p['name']: p for p in admin.get('/api/products/').data['results']}
+    assert listed['Mug']['cost_price'] is None
+    assert Decimal(listed['Bowl']['cost_price']) == Decimal('400')
+    assert Decimal(admin.get(f'/api/products/{priced.id}/').data['cost_price']) == Decimal('400')
+
+    for client in (APIClient(), client_for(User.Role.CUSTOMER), client_for(User.Role.EMPLOYEE)):
+        assert 'cost_price' not in client.get(f'/api/products/{priced.id}/').data
+        assert all('cost_price' not in p for p in client.get('/api/products/').data['results'])
 
 
 def test_products_are_archived_not_deleted(admin, mug):

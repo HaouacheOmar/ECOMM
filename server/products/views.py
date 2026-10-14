@@ -15,6 +15,8 @@ from accounts.permissions import IsAdmin, IsCustomer, ReadOnlyOrAdmin, is_admin
 from . import recommendations
 from .models import Category, Product, ProductImage
 from .serializers import (
+    AdminProductDetailSerializer,
+    AdminProductListSerializer,
     CategorySerializer,
     CategoryWithImageSerializer,
     ProductDetailSerializer,
@@ -67,6 +69,8 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('create', 'partial_update'):
             return ProductWriteSerializer
+        if is_admin(self.request.user):
+            return AdminProductDetailSerializer if self.action == 'retrieve' else AdminProductListSerializer
         return ProductDetailSerializer if self.action == 'retrieve' else ProductListSerializer
 
     def destroy(self, request, *args, **kwargs):

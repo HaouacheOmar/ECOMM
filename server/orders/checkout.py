@@ -47,7 +47,10 @@ def place_order(customer, delivery):
             **delivery,
         )
         OrderItem.objects.bulk_create(
-            OrderItem(order=order, product_id=line.product_id, quantity=line.quantity, price_at_purchase=products[line.product_id].price)
+            OrderItem(
+                order=order, product_id=line.product_id, quantity=line.quantity,
+                price_at_purchase=products[line.product_id].price, cost_at_purchase=products[line.product_id].cost_price,
+            )
             for line in lines
         )
         for line in lines:

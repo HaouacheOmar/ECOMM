@@ -60,6 +60,7 @@ class Order(models.Model):
     pickup_point = models.ForeignKey(PickupPoint, on_delete=models.PROTECT, null=True, blank=True, related_name='orders')
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)  # DZD, cash on delivery, no fees
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    delivered_at = models.DateTimeField(null=True, blank=True, db_index=True)  # Revenue counts from here (ADR 0002)
 
     class Meta:
         ordering = ['-created_at']
@@ -78,3 +79,4 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='order_items')
     quantity = models.PositiveIntegerField()
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
+    cost_at_purchase = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # the Cost price kept at checkout

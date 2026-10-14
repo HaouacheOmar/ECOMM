@@ -21,6 +21,7 @@ class Product(models.Model):
     name = models.CharField(max_length=160, db_index=True)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)  # DZD
+    cost_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # DZD; null = Cost missing
     stock = models.IntegerField(default=0)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products')
     rating_avg = models.DecimalField(max_digits=3, decimal_places=2, default=0)

@@ -1,6 +1,8 @@
 from django.conf import settings
 from rest_framework import serializers
 
+from orders.models import OrderItem
+
 from .models import Category, Product, ProductImage
 
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
@@ -74,8 +76,29 @@ class ProductWriteSerializer(serializers.ModelSerializer):
 
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=1)
+    cost_price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)  # required for new Products
     stock = serializers.IntegerField(min_value=0)
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'stock', 'category']
+        fields = ['id', 'name', 'description', 'price', 'cost_price', 'stock', 'category']
+
+    def update(self, product, validated_data):
+        was_missing = product.cost_price is None
+        product = super().update(product, validated_data)
+        if was_missing and product.cost_price is not None:
+            # Filling a Cost missing completes earlier Order lines that had none; kept costs never change.
+            OrderItem.objects.filter(product=product, cost_at_purchase__isnull=True).update(cost_at_purchase=product.cost_price)
+        return product
+
+
+class AdminProductListSerializer(ProductListSerializer):
+    """The catalog as the Admin sees it: with the Cost price (null = Cost missing)."""
+
+    class Meta(ProductListSerializer.Meta):
+        fields = ProductListSerializer.Meta.fields + ['cost_price']
+
+
+class AdminProductDetailSerializer(ProductDetailSerializer):
+    class Meta(ProductDetailSerializer.Meta):
+        fields = ProductDetailSerializer.Meta.fields + ['cost_price']

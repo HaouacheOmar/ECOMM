@@ -35,7 +35,7 @@ export default function AdminProductsPage() {
       <div className="card p-2">
         <table className="table table-hover align-middle mb-0" aria-busy={isFetching}>
           <thead>
-            <tr><th scope="col"><span className="visually-hidden">Photo</span></th><th scope="col">Name</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Stock</th><th scope="col">Status</th></tr>
+            <tr><th scope="col"><span className="visually-hidden">Photo</span></th><th scope="col">Name</th><th scope="col">Category</th><th scope="col">Price</th><th scope="col">Cost price</th><th scope="col">Stock</th><th scope="col">Status</th></tr>
           </thead>
           <tbody>
             {data?.results.map((p) => (
@@ -44,11 +44,12 @@ export default function AdminProductsPage() {
                 <td><Link to={`/admin/products/${p.id}`}>{p.name}</Link></td>
                 <td>{p.category.name}</td>
                 <td>{formatPrice(p.price)}</td>
+                <td>{p.cost_price == null ? <span className="badge-out">Cost missing</span> : formatPrice(p.cost_price)}</td>
                 <td>{p.stock}</td>
                 <td>{p.is_archived ? <span className="badge-out">Archived</span> : <span className="small">Active</span>}</td>
               </tr>
             ))}
-            {data?.count === 0 && <tr><td colSpan={6} className="text-center text-body-secondary py-4">No products found.</td></tr>}
+            {data?.count === 0 && <tr><td colSpan={7} className="text-center text-body-secondary py-4">No products found.</td></tr>}
           </tbody>
         </table>
       </div>

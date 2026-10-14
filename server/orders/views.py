@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.db.models import F, ProtectedError
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import filters, mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -216,7 +217,9 @@ class OrderViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
             if order.status != TRANSITIONS[to]:
                 return Response({'detail': REFUSALS[to], 'code': 'invalid_transition'}, status=409)
             order.status = to
-            order.save(update_fields=['status'])
+            if to == Order.Status.DELIVERED:
+                order.delivered_at = timezone.now()
+            order.save(update_fields=['status', 'delivered_at'])
             if to == Order.Status.CANCELLED:
                 for item in order.items.all():
                     Product.objects.filter(pk=item.product_id).update(stock=F('stock') + item.quantity)
