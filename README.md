@@ -8,13 +8,14 @@ A full-stack shop for home and lifestyle goods, priced in Algerian dinar (DA), w
 
 - **Storefront** (Customers and Guests): catalog with search and Categories, Cart drawer, checkout with cash on delivery to a home address or a Pickup Point, My Orders updating live, Reviews, Bestsellers and personal Recommendations, and a support chat bubble.
 - **Support desk** (Employees): the Support Queue and their Customers, the live conversation, that Customer's Orders, and the full Orders list. Employees ship, deliver or cancel Orders.
-- **Admin**: a live dashboard (Order feed, which Employees are Online, recent activity), Orders, Products and photos, Categories, Pickup Points, Employees and their activity log.
+- **Admin**: a live dashboard (Order feed, this month's Revenue and Gross profit, Low stock, which Employees are Online, recent activity), Statistics, Orders, Products and photos, Categories, Suppliers and Restocks, Pickup Points, Employees and their activity log.
 
 ## Highlights
 
 - **Real time over WebSockets**: new Orders land on the Admin dashboard without a refresh, a Customer's My Orders updates the moment an Employee ships or cancels, and the desk shows which Employees are Online.
 - **Support chat with a shared queue**: a Customer's first message joins the Support Queue, the first Employee to reply takes it, and the Customer stays with that Employee. If the Employee goes offline with messages still unanswered, the Customer goes back to the queue.
 - **Accounts**: email login with JWT (5-minute access tokens, rotating refresh tokens, blacklist on logout), email verification, password reset and change, and three roles routed to their own workspace.
+- **Statistics and stock**: the Admin records Restocks from Suppliers and Stock Corrections (stock is never typed in), sets each Product's Cost price, and sees each month's Revenue (Delivered Orders), Spent and Gross profit against the previous month, 12-month and yearly charts, top and slow Products, and Low stock.
 - **Background jobs**: Celery sends the emails (with retries), recomputes Bestsellers every 15 minutes and refreshes each Customer's Recommendations nightly.
 - **Design system**: one set of tokens drives light and dark themes across all three workspaces; route transitions and card motion use Motion.
 
@@ -46,7 +47,7 @@ Code is mounted into the containers, so Django and Vite reload on edits. After c
 
 ### Demo
 
-`seed_demo` fills the shop with 30 Products with photos, 5 Pickup Points, 15 Customers, 3 Employees (one deactivated), about 120 Orders over 60 days in every status, 150 Reviews, chat histories with one Customer waiting in the Support Queue, and two weeks of Employee Sessions. Running it again changes nothing. `seed_demo --reset` rebuilds the demo data from scratch.
+`seed_demo` fills the shop with 30 Products with photos, 5 Pickup Points, 15 Customers, 3 Employees (one deactivated), Cost prices, 6 Suppliers (one archived) with about six months of Restocks, about 300 Orders over six months in every status, 150 Reviews, chat histories with one Customer waiting in the Support Queue, and two weeks of Employee Sessions. Running it again changes nothing. `seed_demo --reset` rebuilds the demo data from scratch (run it once on a database seeded before Suppliers and Statistics existed).
 
 With `DEMO_MODE=1` in `server/.env` (restart the containers after changing it):
 

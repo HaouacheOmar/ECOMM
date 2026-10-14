@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
@@ -13,6 +15,7 @@ from demo.seed import DEMO_LOGINS
 from demo.tasks import simulate_activity
 from orders.models import Order, PickupPoint
 from products.models import Product, Review
+from stock.models import Restock
 
 pytestmark = pytest.mark.django_db
 
@@ -53,7 +56,7 @@ def test_the_seeded_shop_has_the_planned_content():
     assert sum(1 for p in shop['products'] if p[2]) == 1  # one archived
     assert sum(1 for p in shop['products'] if p[1] == 0) >= 3  # some Out of stock
     assert {p.split()[0] for p in shop['points']} >= {'Hydra', 'Oran', 'Constantine', 'Annaba'}
-    assert len(shop['orders']) == 120
+    assert len(shop['orders']) == 300
     assert {s for _, s, _ in shop['orders']} == {'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'}
     assert len(shop['reviews']) == 150
     assert shop['queue'] == ['walid@demo.eshop.dz']
@@ -150,3 +153,25 @@ async def test_in_demo_mode_simulated_orders_and_messages_appear_live_for_staff(
     assert event['type'] in ('message', 'queue.added')
     await dashboard.disconnect()
     await desk.disconnect()
+
+
+def test_the_seeded_shop_has_suppliers_costs_restocks_and_statistics():
+    call_command('seed_demo')
+    admin = as_user('admin@demo.eshop.dz')
+
+    suppliers = admin.get('/api/suppliers/?include_archived=1').data['results']
+    assert len(suppliers) == 6 and sum(s['is_archived'] for s in suppliers) == 1
+    assert not Product.objects.filter(cost_price__isnull=True).exists()
+    assert not Product.objects.filter(is_archived=False, usual_supplier__isnull=True).exists()
+    assert not Order.objects.filter(status='DELIVERED', delivered_at__isnull=True).exists()
+    assert not Order.objects.filter(status='CANCELLED', cancelled_at__isnull=True).exists()
+
+    restocks = admin.get('/api/restocks/').data
+    assert restocks['count'] == 30  # six per Supplier in use
+    assert Restock.objects.filter(cancelled_at__isnull=False).count() == 1
+
+    history = admin.get('/api/stats/history/').data['months']
+    assert sum(Decimal(m['gross_profit']) > 0 for m in history) >= 6  # six months of profit
+    assert sum(Decimal(m['spent']) > 0 for m in history) >= 6
+    assert admin.get('/api/stats/month/').data['current']['profit_incomplete'] is False
+    assert admin.get('/api/stats/low-stock/').data  # some Products need restocking

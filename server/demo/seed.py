@@ -1,5 +1,5 @@
-"""The demo shop: people, Products with photos, Pickup Points, two months of Orders, Reviews, chats
-and Employee Sessions. Deterministic (one seeded random generator), so a reset always rebuilds the
+"""The demo shop: people, Products with photos and Cost prices, Suppliers and Restocks, Pickup Points,
+six months of Orders, Reviews, chats and Employee Sessions. Deterministic (one seeded random generator), so a reset always rebuilds the
 same shop; times are relative to now so the data always looks recent."""
 
 import random
@@ -20,6 +20,7 @@ from chat.models import ChatMessage
 from orders.models import Order, OrderItem, PickupPoint
 from products.models import Category, Product, ProductImage, Review
 from products.recommendations import BESTSELLERS_KEY, recommendations_key
+from stock.models import Restock, RestockLine, StockCorrection, Supplier
 
 from .catalog import ARCHIVED, CATEGORIES, PRODUCTS
 
@@ -62,6 +63,18 @@ CHATS = [  # (customer, Employee, [(from_customer, text)]): past conversations, 
     ('rania', 'amina', [(True, 'The rug I received has a loose thread.'), (False, 'Sorry about that, Rania. Could you send a photo? We will replace it.'), (True, 'Sent by email just now.'), (False, 'Thanks, a replacement ships tomorrow.')]),
     ('adel', 'karim', [(True, 'Do you deliver to Tizi Ouzou?'), (False, 'Yes, Home Delivery covers all 58 wilayas, cash on delivery.')]),
 ]
+# One Supplier per Category (the Usual Supplier of its Products), plus one the shop stopped using.
+SUPPLIERS = {
+    'Kitchen': ('Atlas Ceramics', '0550 21 34 87', 'Zone industrielle, Ouled Yaich, Blida', 'Delivers on Tuesdays.'),
+    'Home decor': ('Maison Kasbah Decor', '0661 48 02 19', '7 Rue Ahmed Bouzrina, Casbah, Algiers', 'Hand-made pieces: allow two weeks.'),
+    'Textiles': ('Tissages du Djurdjura', '0770 15 66 43', 'Route de Fort National, Tizi Ouzou', 'Minimum order 10 pieces per model.'),
+    'Bags': ('Cuirs de Ghardaia', '0552 90 11 28', 'Rue du Ksar, Ghardaia', ''),
+    'Stationery': ('Papeterie El Bahia', '0698 33 70 05', '12 Boulevard Emir Abdelkader, Oran', ''),
+}
+FORMER_SUPPLIER = ('Sahel Import Export', '0540 00 12 12', 'Port d\'Alger, Algiers', 'Stopped: late deliveries.')
+ORDER_DAYS = 180   # Orders and Restocks span about six months
+ORDERS = 300
+
 WAITING = ('walid', ['Hi, my order has been "Shipped" for four days. Any news?', 'It is order for the leather tote.'])
 UNREAD_FOR_AMINA = ('nour', 'Thanks for the help yesterday! One more question about the vase sizes.')
 SIMULATED_MESSAGES = [
@@ -86,12 +99,16 @@ def reset():
     products = Product.objects.filter(name__in=[p[1] for p in PRODUCTS])
     points = PickupPoint.objects.filter(name__in=[p[0] for p in PICKUP_POINTS])
     Order.objects.filter(Q(customer__in=people) | Q(items__product__in=products) | Q(pickup_point__in=points)).distinct().delete()
+    suppliers = Supplier.objects.filter(email__endswith=f'@{DOMAIN}')
+    Restock.objects.filter(Q(supplier__in=suppliers) | Q(lines__product__in=products)).distinct().delete()
+    StockCorrection.objects.filter(product__in=products).delete()
     for image in ProductImage.objects.filter(product__in=products):
         image.image.delete(save=False)
     cache.delete_many([BESTSELLERS_KEY, *[recommendations_key(pk) for pk in people.values_list('pk', flat=True)]])
     products.delete()
     points.delete()
     people.delete()
+    suppliers.delete()
 
 
 @transaction.atomic
@@ -112,10 +129,12 @@ def seed():
     customers = {h: person(h, f, l, User.Role.CUSTOMER) for h, f, l in CUSTOMERS}
 
     categories = {name: Category.objects.get_or_create(name=name)[0] for name in CATEGORIES}
+    suppliers = seed_suppliers()
     products = []
     for age, (slug, name, category, price, stock, description) in enumerate(PRODUCTS):
-        product = Product.objects.create(name=name, category=categories[category], price=Decimal(price), stock=stock,
-                                         description=description, is_archived=name in ARCHIVED)
+        cost = Decimal(round(price * rng.uniform(0.45, 0.62), -1))
+        product = Product.objects.create(name=name, category=categories[category], price=Decimal(price), cost_price=cost, stock=stock,
+                                         usual_supplier=suppliers[category], description=description, is_archived=name in ARCHIVED)
         Product.objects.filter(pk=product.pk).update(created_at=now - timedelta(days=90 + age * 2))  # first listed = newest
         with open(PHOTOS / f'{slug}.webp', 'rb') as photo:
             ProductImage.objects.create(product=product, is_primary=True, image=File(photo, name=f'{slug}.webp'))
@@ -123,6 +142,7 @@ def seed():
     points = [PickupPoint.objects.create(name=n, city=c, address=a) for n, c, a in PICKUP_POINTS]
 
     seed_orders(rng, now, list(customers.values()), products, points)
+    seed_restocks(rng, now, products)
     seed_reviews(rng, now, list(customers.values()), [p for p in products if not p.is_archived])
     seed_chats(rng, now, customers, staff)
     seed_sessions(rng, now, staff)
@@ -130,10 +150,10 @@ def seed():
 
 
 def seed_orders(rng, now, customers, products, points):
-    """About 120 Orders over 60 days: old ones mostly Delivered (some Cancelled), recent ones still
-    moving, so every status is present."""
-    for n in range(120):
-        days_ago = rng.uniform(0, 60) if n >= 6 else rng.uniform(0, 1.5)  # a few very recent ones
+    """About 300 Orders over six months, busier lately: old ones mostly Delivered (some Cancelled),
+    recent ones still moving, so every status is present. Each line keeps the Cost price."""
+    for n in range(ORDERS):
+        days_ago = ORDER_DAYS * rng.random() ** 1.4 if n >= 6 else rng.uniform(0, 1.5)  # a few very recent ones
         created = now - timedelta(days=days_ago)
         if days_ago < 1:
             status = rng.choice([Order.Status.CONFIRMED, Order.Status.CONFIRMED, Order.Status.SHIPPED])
@@ -153,8 +173,42 @@ def seed_orders(rng, now, customers, products, points):
             pickup_point=rng.choice(points) if pickup else None, delivery_address='' if pickup else rng.choice(ADDRESSES),
             total_amount=sum(p.price * q for p, q in lines),
         )
-        Order.objects.filter(pk=order.pk).update(created_at=created)
-        OrderItem.objects.bulk_create(OrderItem(order=order, product=p, quantity=q, price_at_purchase=p.price) for p, q in lines)
+        delivered = created + timedelta(days=min(rng.uniform(1, 4), days_ago * 0.9)) if status == Order.Status.DELIVERED else None
+        cancelled = created + timedelta(hours=rng.uniform(1, 20)) if status == Order.Status.CANCELLED else None
+        Order.objects.filter(pk=order.pk).update(created_at=created, delivered_at=delivered, cancelled_at=cancelled)
+        OrderItem.objects.bulk_create(
+            OrderItem(order=order, product=p, quantity=q, price_at_purchase=p.price, cost_at_purchase=p.cost_price) for p, q in lines)
+
+
+def seed_suppliers():
+    """{Category name: its Supplier}, plus an archived former Supplier."""
+    def make(name, phone, address, notes, **extra):
+        handle = name.lower().split()[0]
+        return Supplier.objects.create(name=name, phone=phone, email=f'sales.{handle}@{DOMAIN}', address=address, notes=notes, **extra)
+
+    make(*FORMER_SUPPLIER, is_archived=True)
+    return {category: make(*details) for category, details in SUPPLIERS.items()}
+
+
+def seed_restocks(rng, now, products):
+    """About one Restock a month per Supplier over six months, a few lines each at about the Cost
+    price, and one Cancelled Restock. (They add to the history, not to the catalog's stock levels.)"""
+    today = timezone.localdate(now)
+    by_supplier = {}
+    for product in products:
+        if not product.is_archived:
+            by_supplier.setdefault(product.usual_supplier, []).append(product)
+    restocks = []
+    for supplier, supplied in by_supplier.items():
+        for _ in range(6):
+            restock = Restock.objects.create(supplier=supplier, date=today - timedelta(days=rng.randint(1, ORDER_DAYS)))
+            RestockLine.objects.bulk_create(
+                RestockLine(restock=restock, product=p, quantity=rng.choice([3, 4, 5, 6, 8, 10]),
+                            unit_cost=(p.cost_price * Decimal(rng.choice(['0.95', '1', '1', '1', '1.05']))).quantize(Decimal('1')))
+                for p in rng.sample(supplied, k=min(len(supplied), rng.randint(2, 4))))
+            restocks.append(restock)
+    mistaken = rng.choice(restocks)
+    Restock.objects.filter(pk=mistaken.pk).update(cancelled_at=now - timedelta(days=rng.uniform(0, 3)), note='Entered twice by mistake.')
 
 
 def seed_reviews(rng, now, customers, products):
