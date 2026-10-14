@@ -86,3 +86,10 @@ test('out of stock products cannot be added', async ({ page }) => {
   await searchCatalog(page, 'E2E Tote')
   await expect(page.getByRole('article', { name: 'E2E Tote' }).getByRole('button', { name: 'Out of stock' })).toBeDisabled()
 })
+
+test('the cart drawer closes when the page changes', async ({ page }) => {
+  await addFromCatalog(page, 'E2E Mug')
+  await page.goto('/#/products')
+  await expect(page.getByRole('heading', { level: 1, name: 'Shop' })).toBeVisible()
+  await expect(drawer(page)).toBeHidden()
+})

@@ -76,11 +76,15 @@ function Footer() {
 export default function StorefrontLayout() {
   const signedIn = useSelector((state) => state.auth.status === 'authenticated')
   const isCustomer = useSelector((state) => state.auth.user?.role === 'CUSTOMER')
-  const onHome = useLocation().pathname === '/'
+  const location = useLocation()
+  const onHome = location.pathname === '/'
   useLiveOrders() // a Customer's My Orders follows Shipped/Delivered live
-  const [cartOpen, setCartOpen] = useState(false)
-  const open = useCallback(() => setCartOpen(true), [])
-  const close = useCallback(() => setCartOpen(false), [])
+  // The drawer belongs to the page it was opened on: navigating anywhere else closes it.
+  const [openedOn, setOpenedOn] = useState(null)
+  // (The location object, not its key: navigations the browser makes itself all share the key "default".)
+  const cartOpen = openedOn === location
+  const open = useCallback(() => setOpenedOn(location), [location])
+  const close = useCallback(() => setOpenedOn(null), [])
   const drawer = useMemo(() => ({ open, close }), [open, close])
 
   const account = signedIn

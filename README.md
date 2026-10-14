@@ -43,7 +43,7 @@ docker compose exec backend python manage.py seed_demo
 
 Open **http://localhost:5173**. The API and its docs are at http://localhost:8000/api/docs/.
 
-Code is mounted into the containers, so Django and Vite reload on edits. After changing Celery task code, run `docker compose restart celery-worker celery-beat`.
+Code is mounted into the containers, so Django and Vite reload on edits. After changing Celery task code, run `docker compose restart celery-worker celery-beat`. After pulling new dependencies, rebuild and reinstall: `docker compose up -d --build backend celery-worker celery-beat` and `docker compose restart frontend` (it runs `npm install` on start, into its own Linux `node_modules`).
 
 ### Demo
 

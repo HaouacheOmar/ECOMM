@@ -14,7 +14,7 @@ from .models import Restock, RestockLine, StockCorrection
 
 class NotEnoughStock(Exception):
     def __init__(self, items):
-        super().__init__('Some of this stock has already been sold.')
+        super().__init__('Some of this stock is no longer in stock.')
         self.items = items  # [{'product': id, 'available': n}]
 
 

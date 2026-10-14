@@ -85,7 +85,9 @@ def test_a_new_product_needs_a_cost_price(admin, kitchen):
     response = admin.post('/api/products/', {'name': 'Oak board', 'price': '3800', 'stock': 3, 'category': kitchen.id}, format='json')
 
     assert response.status_code == 400
-    assert set(response.data) == {'cost_price'}
+    assert response.data == {'cost_price': ['Enter the cost price.']}
+    blank = admin.post('/api/products/', {'name': 'Oak board', 'price': '3800', 'cost_price': '', 'category': kitchen.id}, format='json')
+    assert blank.data == {'cost_price': ['Enter the cost price.']}
 
 
 def test_only_the_admin_sees_the_cost_price_and_cost_missing_is_null(admin, mug):

@@ -110,7 +110,10 @@ REDIS_URL = env('REDIS_URL', 'redis://localhost:6379/0')
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {'hosts': [REDIS_URL]},
+        # channels_redis waits up to 5 s per receive (BZPOPMIN) and redis-py 8 also times reads out
+        # at 5 s: the read can lose that race and crash the consumer, skipping disconnect() (an
+        # Employee then stays Online). Reads get more time than the wait.
+        'CONFIG': {'hosts': [{'address': REDIS_URL, 'socket_timeout': 30}]},
     },
 }
 

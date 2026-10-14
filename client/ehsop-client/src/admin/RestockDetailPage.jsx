@@ -56,7 +56,7 @@ export default function RestockDetailPage() {
         </div>
         {cancelling.error && (
           <div role="alert" className="text-danger small mt-2">
-            {cancelling.error.data?.code === 'not_enough_stock' ? 'Some of this stock has already been sold, so it can no longer be cancelled. Use a stock correction instead.' : detailError(cancelling.error)}
+            {cancelling.error.data?.code === 'not_enough_stock' ? 'Some of this stock has already left (sold or corrected), so this restock can no longer be cancelled. Use a stock correction instead.' : detailError(cancelling.error)}
           </div>
         )}
       </div>

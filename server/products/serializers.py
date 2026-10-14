@@ -77,7 +77,10 @@ class ProductWriteSerializer(serializers.ModelSerializer):
 
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=1)
-    cost_price = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)  # required for new Products
+    cost_price = serializers.DecimalField(  # required for new Products
+        max_digits=10, decimal_places=2, min_value=0,
+        error_messages={'required': 'Enter the cost price.', 'invalid': 'Enter the cost price.'},
+    )
     usual_supplier = serializers.PrimaryKeyRelatedField(queryset=Supplier.objects.all(), allow_null=True, required=False)
 
     class Meta:
