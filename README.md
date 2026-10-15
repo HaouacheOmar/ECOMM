@@ -70,7 +70,7 @@ Product photos are from [Unsplash](https://unsplash.com) (see [server/demo/photo
 
 The client is on **Vercel**, the API on **Render** (free web service plus free Key Value for Redis), and the database and product photos on **Supabase**. Vercel proxies `/api/` to Render, so the refresh cookie stays first-party. WebSockets connect to Render directly. With no Celery worker, tasks run inline and the Beat schedule (simulated demo activity) is off.
 
-1. **Supabase**: create a project.
+1. **Supabase**: create a project in the **Frankfurt** region (Render runs there too).
    - In Project Settings → Database, note the **Session pooler** host, user (`postgres.<ref>`) and password.
    - In Storage, create a **public** bucket called `media`.
    - In Storage → S3, create an access key and note the endpoint and region.

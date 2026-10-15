@@ -5,6 +5,7 @@ services:
     name: eshop-api
     runtime: python
     plan: free
+    region: frankfurt # closest to Algeria; create the Supabase project in Frankfurt too
     rootDir: server
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     # seed_demo does nothing once the demo data exists.
@@ -44,6 +45,11 @@ services:
         value: require
       - key: S3_BUCKET
         value: media
+      # boto3 >= 1.36 sends checksum headers some S3-compatible stores (Supabase Storage) reject.
+      - key: AWS_REQUEST_CHECKSUM_CALCULATION
+        value: when_required
+      - key: AWS_RESPONSE_CHECKSUM_VALIDATION
+        value: when_required
       - key: S3_ENDPOINT
         sync: false # https://<project-ref>.supabase.co/storage/v1/s3
       - key: S3_REGION
@@ -58,4 +64,5 @@ services:
   - type: keyvalue
     name: eshop-redis
     plan: free
+    region: frankfurt
     ipAllowList: [] # reachable only from Render services
